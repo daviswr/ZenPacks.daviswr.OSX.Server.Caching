@@ -5,33 +5,32 @@ class_relationships:
   - OSXCachingService(osxCaches) 1:MC OSXCache(osxCachingService)
 
 classes:
-  DEFAULTS:
-    base: [zenpacklib.Component]
-
   OSXCachingService:
+    base: [zenpacklib.Component]
     label: Caching Service
     plural_label: Caching Service
 
     properties:
-      DEFAULTS:
-        type: int
-
       cachingDataPath:
-        label: Data Path
+        label: Path
         type: string
 
       cachingCacheLimit:
         label: Size
+        type: int
 
       cachingReservedVolumeSpace:
         label: Reserved
+        type: int
 
       cachingCacheUsed:
         label: Used
+        type: int
         datapoint: caching_CacheUsed
 
       cachingCacheFree:
         label: Free
+        type: int
         datapoint: caching_CacheFree
 
       cachingCacheStatus:
@@ -41,10 +40,6 @@ classes:
       cachingActive:
         label: Active
         type: boolean
-
-      cachingRegistrationStatus:
-        label: Registration
-        datapoint: caching_RegistrationStatus
 
       cachingState:
         label: Status
@@ -56,34 +51,37 @@ classes:
 
       cachingPort:
         label: Port
+        type: int
 
       cachingPeers:
         label: Peers
+        type: int
 
       cachingRestrictedMedia:
         label: Restricted Media
         type: boolean
 
-     cachingLocalSubnetsOnly:
+      cachingLocalSubnetsOnly:
         label: Local Subnets Only
         type: boolean
 
 
   OSXCache:
+    base: [zenpacklib.Component]
     label: Cache
 
     properties:
-      DEFAULTS:
-        type: string
-
       cacheDetailsMediaType:
         label: Media Type
+        type: string
 
       cacheDetailsLocalizedType:
         label: Localized Type
+        type: string
 
       cacheDetailsLanguage:
         label: Local Language
+        type: string
 
       cacheDetailsBytesUsed:
         label: Size
