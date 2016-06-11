@@ -1,9 +1,5 @@
 name: ZenPacks.daviswr.OSX.Server.Caching
 
-class_relationships:
-  - Products.ZenModel.Device.Device(osxCachingService) 1:MC (server)OSXCachingService
-  - OSXCachingService(osxCaches) 1:MC OSXCache(osxCachingService)
-
 classes:
   OSXCachingService:
     base: [zenpacklib.Component]
@@ -20,16 +16,19 @@ classes:
         type: int
 
       cachingReservedVolumeSpace:
-        label: Reserved
+        label: Reserved Space
+        short_label: Reserved
         type: int
 
       cachingCacheUsed:
-        label: Used
+        label: Used Space
+        short_label: Used
         type: int
         datapoint: caching_CacheUsed
 
       cachingCacheFree:
-        label: Free
+        label: Free Space
+        short_label: Free
         type: int
         datapoint: caching_CacheFree
 
@@ -52,18 +51,23 @@ classes:
       cachingPort:
         label: Port
         type: int
+        grid_display: false
 
       cachingPeers:
         label: Peers
         type: int
+        grid_display: false
 
       cachingRestrictedMedia:
         label: Restricted Media
         type: boolean
+        grid_display: false
 
       cachingLocalSubnetsOnly:
         label: Local Subnets Only
+        short_label: Local Only
         type: boolean
+        grid_display: false
 
 
   OSXCache:
@@ -78,10 +82,12 @@ classes:
       cacheDetailsLocalizedType:
         label: Localized Type
         type: string
+        grid_display: false
 
       cacheDetailsLanguage:
         label: Local Language
         type: string
+        grid_display: false
 
       cacheDetailsBytesUsed:
         label: Size
@@ -89,8 +95,14 @@ classes:
         datapoint: CacheDetails_BytesUsed
 
 
+class_relationships:
+  - Products.ZenModel.Device.Device(osxCachingService) 1:MC (server)OSXCachingService
+  - OSXCachingService(osxCaches) 1:MC OSXCache(osxCachingService)
+
+
 device_classes:
   /:
+    remove: false
     templates:
       OSXCachingService:
         targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.OSXCachingService
@@ -99,6 +111,7 @@ device_classes:
             type: COMMAND
             usessh: true
             commandTemplate: "sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.caching
             cycletime: 60
             component: "${here/id}"
             datapoints:
@@ -111,7 +124,76 @@ device_classes:
               TotalBytesStored: DERIVE_MIN_0
               TotalBytesStoredFromOrigin: DERIVE_MIN_0
               TotalBytesStoredFromPeers: DERIVE_MIN_0
+
+        thresholds:
+          Registration:
+            type: MinMaxThreshold
+            enabled: true
+            dsnames:
+              - caching_RegistrationStatus
+            severity: 3
+            eventClass: /Status/Update
+            minval: 1
+            maxval: 1
+
+        graphs:
+          DEFAULTS:
+            height: 100
+            width: 500
+
+          Cache Size:
+            units: bytes
+            # OS X reports size in powers of 10 rather than 2
+            base: false
+            miny: 0
+            graphpoints:
+              DEFAULTS:
+                lineType: AREA
+                stacked: true
+              Used:
+                dpName: caching_CacheUsed
+                color: 00cc00
+              Free:
+                dpName: caching_CacheFree
+                color: cccccc
+
+          Cache Activity:
+            units: bytes/min
+            miny: 0
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+                lineWidth: 2
+                rpn: "60,*"
+              Returned:
+                dpName: caching_TotalBytesReturned
+                colorindex: 1
+              Stored:
+                dpName: caching_TotalBytesStored
+                colorindex: 2
+              Dropped:
+                dpName: caching_TotalBytesDropped
+                colorindex: 3
+
+          Cache Sources:
+            units: bytes/min
+            miny: 0
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+                lineWidth: 2
+                rpn: "60,*"
+              Origin:
+                dpName: caching_TotalBytesStoredFromOrigin
+                colorindex: 1
+              Peers:
+                dpName: caching_TotalBytesStoredFromPeers
+                colorindex: 2
+              Imported:
+                dpName: caching_TotalBytesImported
+                colorindex: 3
             
+
       OSXCache:
         targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.OSXCache
         datasources:
@@ -119,7 +201,23 @@ device_classes:
             type: COMMAND
             usessh: true
             commandTemplate: "sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.CacheDetails
             cycletime: 60
             component: "${here/id}"
             datapoints:
               BytesUsed: GAUGE
+
+        graphs:
+          DEFAULTS:
+            height: 100
+            width: 500
+
+          Cache Used Space:
+            units: bytes
+            base: false
+            miny: 0
+            graphpoints:
+              Used Space:
+                dpName: CacheDetails_BytesUsed
+                lineType: AREA
+                colorindex: 1
