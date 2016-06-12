@@ -96,7 +96,7 @@ device_classes:
           caching:
             type: COMMAND
             usessh: true
-            commandTemplate: "sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
@@ -186,7 +186,7 @@ device_classes:
           CacheDetails:
             type: COMMAND
             usessh: true
-            commandTemplate: "sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
