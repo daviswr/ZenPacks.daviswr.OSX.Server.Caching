@@ -1,7 +1,7 @@
 from Products.ZenRRD.CommandParser import CommandParser
 from Products.ZenUtils.Utils import prepId
 
-class caching(CommandParser):
+class serveradmin(CommandParser):
 
     def processResults(self, cmd, result):
         components = dict()
