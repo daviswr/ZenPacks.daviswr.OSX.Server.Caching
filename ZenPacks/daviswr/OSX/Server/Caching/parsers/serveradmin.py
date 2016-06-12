@@ -40,7 +40,7 @@ class serveradmin(CommandParser):
              ]
 
         for measure in datapoints:
-            value = int(service.get(measure)
+            value = int(service.get(measure))
             components[component_id][measure] = value
 
         # Individual cache
