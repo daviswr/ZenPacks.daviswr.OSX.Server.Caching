@@ -24,8 +24,8 @@ class serveradmin(CommandParser):
 
         # Caching Service
         component_id = prepId('CachingService')
-            if component_id not in components:
-                components[component_id] = dict()
+        if component_id not in components:
+            components[component_id] = dict()
 
         datapoints = [
             'CacheFree',
