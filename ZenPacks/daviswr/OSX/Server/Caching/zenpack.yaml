@@ -13,64 +13,47 @@ classes:
     plural_label: Caching Service
 
     properties:
-      cachingDataPath:
+      DataPath:
         label: Path
         type: string
         grid_display: false
 
-      cachingCacheLimit:
+      CacheLimit:
         label: Size
         type: int
 
-      cachingReservedVolumeSpace:
+      ReservedVolumeSpace:
         label: Reserved Space
         short_label: Reserved
         type: int
 
-      cachingCacheUsed:
+      CacheUsed:
         label: Used Space
         short_label: Used
         type: int
         datapoint: caching_CacheUsed
 
-      cachingCacheFree:
+      CacheFree:
         label: Free Space
         short_label: Free
         type: int
         datapoint: caching_CacheFree
 
-      #cachingCacheStatus:
-      #  label: Status
-      #  type: string
-
-      cachingActive:
+      Active:
         label: Active
         type: boolean
 
-      #cachingState:
-      #  label: Status
-      #  type: string
-
-      #cachingStartupStatus:
-      #  label: Startup
-      #  type: string
-
-      cachingPort:
+      Port:
         label: Port
         type: int
         grid_display: false
 
-      #cachingPeers:
-      #  label: Peers
-      #  type: int
-      #  grid_display: false
-
-      cachingRestrictedMedia:
+      RestrictedMedia:
         label: Restricted Media
         type: boolean
         grid_display: false
 
-      cachingLocalSubnetsOnly:
+      LocalSubnetsOnly:
         label: Local Subnets Only
         short_label: Local Only
         type: boolean
@@ -82,22 +65,22 @@ classes:
     label: Cache
 
     properties:
-      cacheDetailsMediaType:
+      MediaType:
         label: Media Type
         type: string
         grid_display: false
 
-      cacheDetailsLocalizedType:
+      LocalizedType:
         label: Localized Type
         type: string
         grid_display: false
 
-      cacheDetailsLanguage:
+      Language:
         label: Local Language
         type: string
         grid_display: false
 
-      cacheDetailsBytesUsed:
+      BytesUsed:
         label: Size
         type: int
         datapoint: CacheDetails_BytesUsed
@@ -114,7 +97,7 @@ device_classes:
             type: COMMAND
             usessh: true
             commandTemplate: "sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
-            parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.caching
+            parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
             datapoints:
@@ -204,7 +187,7 @@ device_classes:
             type: COMMAND
             usessh: true
             commandTemplate: "sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
-            parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.CacheDetails
+            parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
             datapoints:

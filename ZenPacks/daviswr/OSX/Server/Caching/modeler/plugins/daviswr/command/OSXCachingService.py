@@ -20,31 +20,27 @@ class OSXCachingService(CommandPlugin):
             if key.startswith('caching:CacheDetails:'):
                 short = key.replace('caching:CacheDetails:_array_index:', '')
                 idx = int(short.split(':')[0])
-                k = 'cacheDetails' + short.split(':')[1]
+                k = short.split(':')[1]
                 v = output.get(key).replace('"', '')
                 if not caches.has_key(idx):
                   caches[idx] = dict()
                 caches[idx].update({k: v})
             else:
-                service.update({key.replace(':', ''): output.get(key).replace('"', '')})
+                service.update({key.split(':')[1]: output.get(key).replace('"', '')})
 
         # Caching Service
-        if service.has_key('cachingstate'):
-            service['cachingState'] = service.get('cachingstate')
-            del service['cachingstate']
-
-        for boolean in ['cachingActive', 'cachingRestrictedMedia', 'cachingLocalSubnetsOnly']:
+        for boolean in ['Active', 'RestrictedMedia', 'LocalSubnetsOnly']:
             if service.has_key(boolean):
                service[boolean] = True if ('yes' == service[boolean]) else False
 
-        for numeric in ['cachingCacheLimit', 'cachingReservedVolumeSpace', \
-            'cachingCacheUsed', 'cachingCacheFree', 'cachingPort']:
+        for numeric in ['CacheLimit', 'ReservedVolumeSpace', \
+            'CacheUsed', 'CacheFree', 'Port']:
             if service.has_key('numeric'):
                 service[numeric] = int(service[numeric])
 
         service['id'] = self.prepId('CachingService')
-        service['title'] = service.get('cachingServerRoot',
-            service.get('cachingDataPath', 'Caching Service'))
+        service['title'] = service.get('ServerRoot',
+            service.get('DataPath', 'Caching Service'))
         log.debug('Caching Service\n%s', service)
 
         rm = RelationshipMap(
@@ -65,14 +61,14 @@ class OSXCachingService(CommandPlugin):
 
         for idx in caches:
             cache = caches.get(idx)
-            if cache.has_key('cacheDetailsBytesUsed'):
-                cache['cacheDetailsBytesUsed'] = int(cache['cacheDetailsBytesUsed'])
-            lang = cache.get('cacheDetailsLanguage', '')
+            if cache.has_key('BytesUsed'):
+                cache['BytesUsed'] = int(cache['BytesUsed'])
+            lang = cache.get('Language', '')
             suffix = ' ({})'.format(lang) if (len(lang) > 0) else ''
-            cache['id'] = self.prepId(cache.get('cacheDetailsMediaType',
+            cache['id'] = self.prepId(cache.get('MediaType',
                 'Cache {}'.format(str(idx))) + '-' + lang)
-            cache['title'] = cache.get('cacheDetailsLocalizedType',
-                cache.get('cacheDetailsMediaType', 'Cache {}'.format(str(idx))) + 'suffix')
+            cache['title'] = cache.get('LocalizedType',
+                cache.get('MediaType', 'Cache {}'.format(str(idx))) + 'suffix')
             log.debug('Individual Cache: %s', cache)
             rm.append(ObjectMap(
                 modname='ZenPacks.daviswr.OSX.Server.Caching.Cache',
