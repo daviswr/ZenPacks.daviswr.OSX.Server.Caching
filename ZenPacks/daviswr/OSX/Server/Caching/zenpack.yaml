@@ -1,7 +1,13 @@
 name: ZenPacks.daviswr.OSX.Server.Caching
 
+class_relationships:
+  - Products.ZenModel.Device.Device(cachingService) 1:MC CachingService(server)
+  - Products.ZenModel.Device.Device(caches) 1:MC Cache(server)
+# Can't get Cache components to show if they're contained by the Caching Service
+#  - CachingService(caches) 1:MC Cache(cachingService)
+
 classes:
-  OSXCachingService:
+  CachingService:
     base: [zenpacklib.Component]
     label: Caching Service
     plural_label: Caching Service
@@ -10,6 +16,7 @@ classes:
       cachingDataPath:
         label: Path
         type: string
+        grid_display: false
 
       cachingCacheLimit:
         label: Size
@@ -32,31 +39,31 @@ classes:
         type: int
         datapoint: caching_CacheFree
 
-      cachingCacheStatus:
-        label: Status
-        type: string
+      #cachingCacheStatus:
+      #  label: Status
+      #  type: string
 
       cachingActive:
         label: Active
         type: boolean
 
-      cachingState:
-        label: Status
-        type: string
+      #cachingState:
+      #  label: Status
+      #  type: string
 
-      cachingStartupStatus:
-        label: Startup
-        type: string
+      #cachingStartupStatus:
+      #  label: Startup
+      #  type: string
 
       cachingPort:
         label: Port
         type: int
         grid_display: false
 
-      cachingPeers:
-        label: Peers
-        type: int
-        grid_display: false
+      #cachingPeers:
+      #  label: Peers
+      #  type: int
+      #  grid_display: false
 
       cachingRestrictedMedia:
         label: Restricted Media
@@ -70,7 +77,7 @@ classes:
         grid_display: false
 
 
-  OSXCache:
+  Cache:
     base: [zenpacklib.Component]
     label: Cache
 
@@ -78,6 +85,7 @@ classes:
       cacheDetailsMediaType:
         label: Media Type
         type: string
+        grid_display: false
 
       cacheDetailsLocalizedType:
         label: Localized Type
@@ -95,17 +103,12 @@ classes:
         datapoint: CacheDetails_BytesUsed
 
 
-class_relationships:
-  - Products.ZenModel.Device.Device(osxCachingService) 1:MC (server)OSXCachingService
-  - OSXCachingService(osxCaches) 1:MC OSXCache(osxCachingService)
-
-
 device_classes:
   /:
     remove: false
     templates:
-      OSXCachingService:
-        targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.OSXCachingService
+      CachingService:
+        targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.CachingService
         datasources:
           caching:
             type: COMMAND
@@ -152,7 +155,7 @@ device_classes:
                 stacked: true
               Used:
                 dpName: caching_CacheUsed
-                color: 00cc00
+                colorindex: 0
               Free:
                 dpName: caching_CacheFree
                 color: cccccc
@@ -167,13 +170,13 @@ device_classes:
                 rpn: "60,*"
               Returned:
                 dpName: caching_TotalBytesReturned
-                colorindex: 1
+                colorindex: 0
               Stored:
                 dpName: caching_TotalBytesStored
-                colorindex: 2
+                colorindex: 1
               Dropped:
                 dpName: caching_TotalBytesDropped
-                colorindex: 3
+                colorindex: 2
 
           Cache Sources:
             units: bytes/min
@@ -185,17 +188,17 @@ device_classes:
                 rpn: "60,*"
               Origin:
                 dpName: caching_TotalBytesStoredFromOrigin
-                colorindex: 1
+                colorindex: 0
               Peers:
                 dpName: caching_TotalBytesStoredFromPeers
-                colorindex: 2
+                colorindex: 1
               Imported:
                 dpName: caching_TotalBytesImported
-                colorindex: 3
+                colorindex: 2
             
 
-      OSXCache:
-        targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.OSXCache
+      Cache:
+        targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.Cache
         datasources:
           CacheDetails:
             type: COMMAND
@@ -220,4 +223,4 @@ device_classes:
               Used Space:
                 dpName: CacheDetails_BytesUsed
                 lineType: AREA
-                colorindex: 1
+                colorindex: 0
