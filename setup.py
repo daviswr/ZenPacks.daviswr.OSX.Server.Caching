@@ -4,7 +4,7 @@
 # NB: PACKAGES is deprecated
 NAME = "ZenPacks.daviswr.OSX.Server.Caching"
 VERSION = "1.0.0dev"
-AUTHOR = "Your Name Here"
+AUTHOR = "Wes Davis"
 LICENSE = ""
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.daviswr', 'ZenPacks.daviswr.OSX', 'ZenPacks.daviswr.OSX.Server']
 PACKAGES = ['ZenPacks', 'ZenPacks.daviswr', 'ZenPacks.daviswr.OSX', 'ZenPacks.daviswr.OSX.Server', 'ZenPacks.daviswr.OSX.Server.Caching']
