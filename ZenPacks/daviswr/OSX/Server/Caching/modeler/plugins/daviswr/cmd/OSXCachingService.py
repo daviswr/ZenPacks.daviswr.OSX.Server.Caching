@@ -26,7 +26,8 @@ class OSXCachingService(CommandPlugin):
                   caches[idx] = dict()
                 caches[idx].update({k: v})
             else:
-                service.update({key.split(':')[1]: output.get(key).replace('"', '')})
+                k = key.split(':')[1]
+                service.update({k: output.get(key).replace('"', '')})
 
         # Caching Service
         for boolean in ['Active', 'RestrictedMedia', 'LocalSubnetsOnly']:
@@ -67,7 +68,8 @@ class OSXCachingService(CommandPlugin):
             lang = cache.get('Language', '')
             suffix = ' ({})'.format(lang) if (len(lang) > 0) else ''
             cache['id'] = self.prepId(cache.get('MediaType',
-                'Cache {}'.format(str(idx))) + '-' + lang)
+                'Cache {}'.format(str(idx))) \
+                + '-' + lang)
             cache['title'] = cache.get('LocalizedType',
                 cache.get('MediaType', 'Cache {}'.format(str(idx))) + 'suffix')
             log.debug('Individual Cache: %s', cache)
