@@ -59,4 +59,3 @@ class serveradmin(CommandParser):
                 values = components[point.component]
                 if point.id in values:
                     result.values.append((point, values[point.id]))
-            
