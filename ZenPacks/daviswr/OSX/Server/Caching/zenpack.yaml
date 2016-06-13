@@ -2,9 +2,7 @@ name: ZenPacks.daviswr.OSX.Server.Caching
 
 class_relationships:
   - Products.ZenModel.Device.Device(cachingService) 1:MC CachingService(server)
-  - Products.ZenModel.Device.Device(caches) 1:MC Cache(server)
-# Can't get Cache components to show if they're contained by the Caching Service
-#  - CachingService(caches) 1:MC Cache(cachingService)
+  - CachingService(caches) 1:MC Cache(cachingService)
 
 classes:
   CachingService:
@@ -13,18 +11,23 @@ classes:
     plural_label: Caching Service
 
     properties:
+      Active:
+        label: Active
+        type: boolean
+
       DataPath:
         label: Path
         type: string
         grid_display: false
 
+      CacheFree:
+        label: Free Space
+        short_label: Free
+        type: int
+        datapoint: caching_CacheFree
+
       CacheLimit:
         label: Size
-        type: int
-
-      ReservedVolumeSpace:
-        label: Reserved Space
-        short_label: Reserved
         type: int
 
       CacheUsed:
@@ -33,40 +36,39 @@ classes:
         type: int
         datapoint: caching_CacheUsed
 
-      CacheFree:
-        label: Free Space
-        short_label: Free
-        type: int
-        datapoint: caching_CacheFree
-
-      Active:
-        label: Active
-        type: boolean
-
-      Port:
-        label: Port
-        type: int
-        grid_display: false
-
-      RestrictedMedia:
-        label: Restricted Media
-        type: boolean
-        grid_display: false
-
       LocalSubnetsOnly:
         label: Local Subnets Only
         short_label: Local Only
         type: boolean
         grid_display: false
 
+      Port:
+        label: Port
+        type: int
+        grid_display: false
+
+      ReservedVolumeSpace:
+        label: Reserved Space
+        short_label: Reserved
+        type: int
+
+      RestrictedMedia:
+        label: Restricted Media
+        type: boolean
+        grid_display: false
 
   Cache:
     base: [zenpacklib.Component]
     label: Cache
 
     properties:
-      MediaType:
-        label: Media Type
+      BytesUsed:
+        label: Size
+        type: int
+        datapoint: CacheDetails_BytesUsed
+
+      Language:
+        label: Local Language
         type: string
         grid_display: false
 
@@ -75,15 +77,10 @@ classes:
         type: string
         grid_display: false
 
-      Language:
-        label: Local Language
+      MediaType:
+        label: Media Type
         type: string
         grid_display: false
-
-      BytesUsed:
-        label: Size
-        type: int
-        datapoint: CacheDetails_BytesUsed
 
 
 device_classes:
@@ -118,7 +115,7 @@ device_classes:
             dsnames:
               - caching_RegistrationStatus
             severity: 3
-            eventClass: /Status/Update
+            eventClass: /App/Failed
             minval: 1
             maxval: 1
 
@@ -161,7 +158,7 @@ device_classes:
                 dpName: caching_TotalBytesDropped
                 colorindex: 2
 
-          Cache Sources:
+          Cache Source Activity:
             units: bytes/min
             miny: 0
             graphpoints:
