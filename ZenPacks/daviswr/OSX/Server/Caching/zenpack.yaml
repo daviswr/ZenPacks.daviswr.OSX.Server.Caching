@@ -9,78 +9,122 @@ classes:
     base: [zenpacklib.Component]
     label: Caching Service
     plural_label: Caching Service
+    order: 10
 
     properties:
       Active:
         label: Active
         type: boolean
+        order: 11
+
+      AllowPersonalCaching:
+        label: iCloud Caching
+        short_label: iCloud
+        type: boolean
+        grid_display: false
+        order: 9
 
       DataPath:
         label: Path
         type: string
         grid_display: false
+        order: 1
 
       CacheFree:
         label: Free Space
         short_label: Free
         type: int
+        renderer: Zenoss.render.bytesString
         datapoint: caching_CacheFree
+        order: 4
 
       CacheLimit:
-        label: Size
+        label: Size Limit
+        short_label: Limit
         type: int
+        renderer: Zenoss.render.bytesString
+        order: 2
 
       CacheUsed:
         label: Used Space
         short_label: Used
         type: int
+        renderer: Zenoss.render.bytesString
         datapoint: caching_CacheUsed
+        order: 3
 
       LocalSubnetsOnly:
         label: Local Subnets Only
         short_label: Local Only
         type: boolean
         grid_display: false
+        order: 10
 
       Port:
         label: Port
         type: int
         grid_display: false
+        order: 7
 
       ReservedVolumeSpace:
-        label: Reserved Space
-        short_label: Reserved
+        label: Reserved Volume Space
         type: int
+        renderer: Zenoss.render.bytesString
+        grid_display: false
+        order: 6
 
       RestrictedMedia:
         label: Restricted Media
         type: boolean
         grid_display: false
+        order: 8
+
+      ServerGUID:
+        label: Server GUID
+        type: string
+        grid_display: false
+        details_display: false
+
+      ServerRoot:
+        label: Server Root
+        type: string
+        grid_display: false
+        order: 5
+
 
   Cache:
     base: [zenpacklib.Component]
     label: Cache
+    order: 11
 
     properties:
       BytesUsed:
         label: Size
         type: int
+        renderer: Zenoss.render.bytesString
         datapoint: CacheDetails_BytesUsed
+        order: 4
 
       Language:
         label: Local Language
+        short_label: Language
         type: string
         grid_display: false
+        order: 2
 
       LocalizedType:
         label: Localized Type
+        short_label: Localization
         type: string
         grid_display: false
+        order: 3
 
       MediaType:
         label: Media Type
+        short_label: Media
         type: string
         grid_display: false
+        order: 1
 
 
 device_classes:
@@ -127,7 +171,8 @@ device_classes:
           Cache Size:
             units: bytes
             # OS X reports size in powers of 10 rather than 2
-            base: false
+            # but Zenoss.render.bytesString only does powers of 2
+            base: true
             miny: 0
             graphpoints:
               DEFAULTS:
@@ -197,7 +242,7 @@ device_classes:
 
           Cache Used Space:
             units: bytes
-            base: false
+            base: true
             miny: 0
             graphpoints:
               Used Space:

@@ -30,18 +30,21 @@ class OSXCachingService(CommandPlugin):
                 service.update({k: output.get(key).replace('"', '')})
 
         # Caching Service
-        for boolean in ['Active', 'RestrictedMedia', 'LocalSubnetsOnly']:
+        for boolean in ['Active', 'AllowPersonalCaching', \
+            'LocalSubnetsOnly', 'RestrictedMedia']: 
             if service.has_key(boolean):
                service[boolean] = True if ('yes' == service[boolean]) else False
 
-        for numeric in ['CacheLimit', 'ReservedVolumeSpace', \
-            'CacheUsed', 'CacheFree', 'Port']:
+        for numeric in ['CacheFree', 'CacheLimit', 'CacheUsed', \
+            'Port', 'ReservedVolumeSpace']:
             if service.has_key('numeric'):
                 service[numeric] = int(service[numeric])
 
         service['id'] = self.prepId('CachingService')
         service['title'] = service.get('ServerRoot',
             service.get('DataPath', 'Caching Service'))
+        if not service.has_key('AllowPersonalCaching'):
+            service['AllowPersonalCaching'] = True
         log.debug('Caching Service\n%s', service)
 
         rm = RelationshipMap(

@@ -30,6 +30,8 @@ class serveradmin(CommandParser):
         datapoints = [
             'CacheFree',
             'CacheUsed',
+            'PersonalCacheFree',
+            'PersonalCacheUsed',
             'RegistrationStatus',
             'TotalBytesDropped',
             'TotalBytesImported',
