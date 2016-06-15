@@ -1,11 +1,11 @@
 # ZenPacks.daviswr.OSX.Server.Caching
 
-ZenPack to model & monitor the Caching Service in OS X Server (Mountain Lion & up)
+ZenPack to model & monitor the Caching Service in OS X Server
 
 ## Requirements
 
 * Apple OS X 10.8 or later with the Server package from the App Store
-  * Only tested on 10.10 (Yosemite) so far...
+  * Only tested with Server 5 (Yosemite & El Capitan) so far...
 * An account on the OS X host, which can
   * Log in via SSH with a key
   * Run the `serveradmin` command with "settings" and "fullstatus" parameters without password
