@@ -3,9 +3,9 @@
 # or saved.  Do not modify them directly here.
 # NB: PACKAGES is deprecated
 NAME = "ZenPacks.daviswr.OSX.Server.Caching"
-VERSION = "0.8.0"
+VERSION = "0.8.1"
 AUTHOR = "Wes Davis"
-LICENSE = ""
+LICENSE = "MIT"
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.daviswr', 'ZenPacks.daviswr.OSX', 'ZenPacks.daviswr.OSX.Server']
 PACKAGES = ['ZenPacks', 'ZenPacks.daviswr', 'ZenPacks.daviswr.OSX', 'ZenPacks.daviswr.OSX.Server', 'ZenPacks.daviswr.OSX.Server.Caching']
 INSTALL_REQUIRES = []
