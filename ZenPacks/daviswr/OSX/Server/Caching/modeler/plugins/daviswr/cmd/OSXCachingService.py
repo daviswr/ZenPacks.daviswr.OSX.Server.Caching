@@ -31,9 +31,9 @@ class OSXCachingService(CommandPlugin):
 
         # Caching Service
         for boolean in ['Active', 'AllowPersonalCaching', \
-            'LocalSubnetsOnly', 'RestrictedMedia']: 
+            'LocalSubnetsOnly', 'LogClientIdentity', 'RestrictedMedia']: 
             if service.has_key(boolean):
-               service[boolean] = True if ('yes' == service[boolean]) else False
+                service[boolean] = True if ('yes' == service[boolean]) else False
 
         for numeric in ['CacheFree', 'CacheLimit', 'CacheUsed', \
             'Port', 'ReservedVolumeSpace']:
@@ -43,8 +43,9 @@ class OSXCachingService(CommandPlugin):
         service['id'] = self.prepId('CachingService')
         service['title'] = service.get('ServerRoot',
             service.get('DataPath', 'Caching Service'))
-        if not service.has_key('AllowPersonalCaching'):
-            service['AllowPersonalCaching'] = True
+        # Not listening, service likely not running
+        if service.has_key('Port') and service.get('Port') == 0:
+            del service['Port']
         log.debug('Caching Service\n%s', service)
 
         rm = RelationshipMap(

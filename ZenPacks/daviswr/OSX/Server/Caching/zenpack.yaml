@@ -15,12 +15,14 @@ classes:
       Active:
         label: Active
         type: boolean
-        order: 11
+        default: false
+        order: 12
 
       AllowPersonalCaching:
         label: iCloud Caching
         short_label: iCloud
         type: boolean
+        default: true
         grid_display: false
         order: 9
 
@@ -53,10 +55,18 @@ classes:
         datapoint: caching_CacheUsed
         order: 3
 
+      LogClientIdentity:
+        label: Client Identity Logging
+        type: boolean
+        default: true
+        grid_display: false
+        order: 11
+
       LocalSubnetsOnly:
         label: Local Subnets Only
         short_label: Local Only
         type: boolean
+        default: true
         grid_display: false
         order: 10
 
@@ -76,6 +86,7 @@ classes:
       RestrictedMedia:
         label: Restricted Media
         type: boolean
+        default: false
         grid_display: false
         order: 8
 
