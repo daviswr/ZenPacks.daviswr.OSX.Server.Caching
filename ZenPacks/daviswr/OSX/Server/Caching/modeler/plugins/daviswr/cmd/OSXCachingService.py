@@ -73,7 +73,7 @@ class OSXCachingService(CommandPlugin):
             suffix = ' ({})'.format(lang) if (len(lang) > 0) else ''
             cache['id'] = self.prepId(cache.get('MediaType',
                 'Cache {}'.format(str(idx))) \
-                + '-' + lang)
+                + '_' + lang)
             cache['title'] = cache.get('LocalizedType',
                 cache.get('MediaType', 'Cache {}'.format(str(idx))) + 'suffix')
             log.debug('Individual Cache: %s', cache)

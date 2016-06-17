@@ -50,7 +50,7 @@ class serveradmin(CommandParser):
             cache = caches.get(idx)
             component_id = prepId(cache.get('MediaType',
                 'Cache {}'.format(str(idx))) \
-                + '-' + cache.get('Language', ''))
+                + '_' + cache.get('Language', ''))
             if component_id not in components:
                 components[component_id] = dict()
             value = int(cache.get('BytesUsed'))
