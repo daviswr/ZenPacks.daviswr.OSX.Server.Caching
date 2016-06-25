@@ -17,3 +17,7 @@ Cmnd_Alias SERVERADMIN_FULLSTATUS = /Applications/Server.app/Contents/ServerRoot
 Cmnd_Alias SERVERADMIN_SETTINGS = /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin settings *
 zenoss ALL=(ALL) NOPASSWD: SERVERADMIN_FULLSTATUS, SERVERADMIN_SETTINGS
 ```
+
+## Usage
+
+I'm not going to make any assumptions about your device class organization, so it's up to you to configure the `daviswr.cmd.OSXCachingService` modeler on the appropriate class or device.
