@@ -21,7 +21,7 @@ zenoss ALL=(ALL) NOPASSWD: SERVERADMIN_FULLSTATUS, SERVERADMIN_SETTINGS
 
 ## El Capitan Issues
 
-OpenSSH that ships with El Capitan disabled Diffie-Hellman key exchanges with SHA-1 hashes, which the version of Twisted Conch, and thus ZenCommand, in Zenoss 4.2.5 SP671 (not tried 5.x) requires.
+El Capitan ships with OpenSSH 6.9 and disables Diffie-Hellman key exchanges with SHA-1 hashes, which the version of Twisted Conch, and thus ZenCommand, in Zenoss 4.2.5 SP671 (not tried 5.x) requires.
 
 `/etc/ssh/ssh_config` has the line (commented out)
 ```
@@ -34,7 +34,7 @@ Copying that to `/etc/ssh/sshd_config` and restarting the SSH daemon solves the 
 error: Hm, kex protocol error: type 30 seq 1 [preauth]
 ``` 
 
-Still working on that, any help would be appreciated...
+OpenSSH appears to have deprecated type 30 key exchanges [in 2015](https://anongit.mindrot.org/openssh.git/commit/?id=318be28cda1fd9108f2e6f2f86b0b7589ba2aed0) and Conch [was updated](https://twistedmatrix.com/trac/ticket/8100), but this might be unresolvable on Zenoss without a new zenup SP.
 
 ## Usage
 
