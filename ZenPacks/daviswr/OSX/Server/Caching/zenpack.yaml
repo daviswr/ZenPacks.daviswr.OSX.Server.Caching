@@ -76,6 +76,16 @@ classes:
         grid_display: false
         order: 7
 
+      #RegistrationStatus:
+      #  label: Registration
+      #  type: int
+      #  datapoint: caching_RegistrationStatus
+      #  #enum: {0: "Error", 1: "Registered"}
+      #  enum:
+      #    0: "Error"
+      #    1: "Registered"
+      #  order: 13
+
       ReservedVolumeSpace:
         label: Reserved Volume Space
         type: int
@@ -147,8 +157,11 @@ device_classes:
         datasources:
           caching:
             type: COMMAND
-            usessh: true
-            commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            #usessh: true
+            #commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            # Workaround for Twisted Conch's incompatibility with OpenSSH 6.9
+            usessh: false
+            commandTemplate: "/usr/bin/ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PasswordAuthentication=no -i ${device/zKeyPath} -l ${device/zCommandUsername} ${device/manageIp} \"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\""
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
@@ -238,8 +251,11 @@ device_classes:
         datasources:
           CacheDetails:
             type: COMMAND
-            usessh: true
-            commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            #usessh: true
+            #commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            # Workaround for Twisted Conch's incompatibility with OpenSSH 6.9
+            usessh: false
+            commandTemplate: "/usr/bin/ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PasswordAuthentication=no -i ${device/zKeyPath} -l ${device/zCommandUsername} ${device/manageIp} \"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\""
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
