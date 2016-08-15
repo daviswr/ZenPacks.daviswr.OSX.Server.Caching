@@ -8,6 +8,7 @@ import subprocess
 class OSXCachingService(PythonPlugin):
     req_properties = (
         'zKeyPath',
+        'zCommandPort',
         'zCommandUsername',
         'manageIp',
         )
@@ -19,13 +20,14 @@ class OSXCachingService(PythonPlugin):
         serveradmin = '/Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin'
         remote_cmd = '"sudo {0} settings caching; sudo {0} fullstatus caching"'.format(serveradmin)
         key_path = getattr(device, 'zKeyPath', '')
+        cmd_port = getattr(device, 'zCommandPort', '')
         cmd_user = getattr(device, 'zCommandUsername', '')
         dev_ip = getattr(device, 'manageIp', '')
         ssh_path = '/usr/bin/ssh'
         ssh_params = '-o UserKnownHostsFile=/dev/null ' \
                      '-o StrictHostKeyChecking=no ' \
                      '-o PasswordAuthentication=no ' \
-                     '-i {0} -l {1} {2}'.format(key_path, cmd_user, dev_ip)
+                     '-i {0} -l {1} -p {2} {3}'.format(key_path, cmd_user, cmd_port, dev_ip)
         command = '{0} {1} {2}'.format(ssh_path, ssh_params, remote_cmd)
         log.debug('Caching Service modeler command: %s', command)
 
@@ -36,7 +38,6 @@ class OSXCachingService(PythonPlugin):
                 stdout=subprocess.PIPE,
                 stderr=devnull)
             output = ps.communicate()[0]
-        log.debug('Caching Service modeler output: %s', output)
 
         return output
 
