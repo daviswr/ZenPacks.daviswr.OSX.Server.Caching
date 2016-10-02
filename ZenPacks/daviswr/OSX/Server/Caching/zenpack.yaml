@@ -5,10 +5,13 @@ class_relationships:
   - CachingService(caches) 1:MC Cache(cachingService)
 
 classes:
-  CachingService:
+  DEFAULTS:
     base: [zenpacklib.Component]
+  CachingService:
     label: Caching Service
+    short_label: Service
     plural_label: Caching Service
+    plural_short_label: Service
     order: 10
 
     properties:
@@ -16,6 +19,9 @@ classes:
         label: Active
         type: boolean
         default: false
+        enum: {true: "clear", false: "critical"}
+        renderer: Zenoss.render.severity
+        details_display: false
         order: 12
 
       AllowPersonalCaching:
@@ -76,15 +82,17 @@ classes:
         grid_display: false
         order: 7
 
-      #RegistrationStatus:
-      #  label: Registration
-      #  type: int
-      #  datapoint: caching_RegistrationStatus
-      #  #enum: {0: "Error", 1: "Registered"}
-      #  enum:
-      #    0: "Error"
-      #    1: "Registered"
-      #  order: 13
+      RegistrationStatus:
+        label: Registration
+        short_label: Reg
+        type: int
+        datapoint: caching_RegistrationStatus
+        enum: {0: "critical", 1: "clear"}
+        renderer: Zenoss.render.severity
+        # Enum doesn't want to display correctly
+        grid_display: false
+        details_display: false
+        order: 13
 
       ReservedVolumeSpace:
         label: Reserved Volume Space
@@ -114,9 +122,12 @@ classes:
 
 
   Cache:
-    base: [zenpacklib.Component]
     label: Cache
     order: 11
+
+    relationships:
+      cachingService:
+        grid_display: false
 
     properties:
       BytesUsed:
@@ -210,13 +221,13 @@ device_classes:
                 color: cccccc
 
           Cache Activity:
-            units: bytes/min
+            units: bits/sec
             miny: 0
             graphpoints:
               DEFAULTS:
                 lineType: LINE
                 lineWidth: 2
-                rpn: "60,*"
+                rpn: "8,*"
               Returned:
                 dpName: caching_TotalBytesReturned
                 colorindex: 0
@@ -228,13 +239,13 @@ device_classes:
                 colorindex: 2
 
           Cache Source Activity:
-            units: bytes/min
+            units: bits/sec
             miny: 0
             graphpoints:
               DEFAULTS:
                 lineType: LINE
                 lineWidth: 2
-                rpn: "60,*"
+                rpn: "8,*"
               Origin:
                 dpName: caching_TotalBytesStoredFromOrigin
                 colorindex: 0
@@ -257,7 +268,7 @@ device_classes:
             # Workaround for Twisted Conch's incompatibility with OpenSSH 6.9
             commandTemplate: "/usr/bin/ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PasswordAuthentication=no -i ${device/zKeyPath} -l ${device/zCommandUsername} -p ${device/zCommandPort} ${device/manageIp} \"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\""
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
-            cycletime: 60
+            cycletime: 300
             component: "${here/id}"
             datapoints:
               BytesUsed: GAUGE
