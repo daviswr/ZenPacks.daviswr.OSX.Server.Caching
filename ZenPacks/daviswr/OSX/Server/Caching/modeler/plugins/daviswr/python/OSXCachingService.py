@@ -77,34 +77,7 @@ class OSXCachingService(PythonPlugin):
         caching:CacheDetails:_array_index:1:LocalizedType = "iOS Software"
         caching:CacheDetails:_array_index:1:MediaType = "iOS Software"
         caching:CacheDetails:_array_index:1:Language = "en"
-        caching:CacheDetails:_array_index:2:BytesUsed = 0
-        caching:CacheDetails:_array_index:2:LocalizedType = "Apple TV Software"
-        caching:CacheDetails:_array_index:2:MediaType = "Apple TV Software"
-        caching:CacheDetails:_array_index:2:Language = "en"
-        caching:CacheDetails:_array_index:3:BytesUsed = 0
-        caching:CacheDetails:_array_index:3:LocalizedType = "iCloud"
-        caching:CacheDetails:_array_index:3:MediaType = "iCloud"
-        caching:CacheDetails:_array_index:3:Language = "en"
-        caching:CacheDetails:_array_index:4:BytesUsed = 0
-        caching:CacheDetails:_array_index:4:LocalizedType = "Books"
-        caching:CacheDetails:_array_index:4:MediaType = "Books"
-        caching:CacheDetails:_array_index:4:Language = "en"
-        caching:CacheDetails:_array_index:5:BytesUsed = 0
-        caching:CacheDetails:_array_index:5:LocalizedType = "iTunes U"
-        caching:CacheDetails:_array_index:5:MediaType = "iTunes U"
-        caching:CacheDetails:_array_index:5:Language = "en"
-        caching:CacheDetails:_array_index:6:BytesUsed = 0
-        caching:CacheDetails:_array_index:6:LocalizedType = "Movies"
-        caching:CacheDetails:_array_index:6:MediaType = "Movies"
-        caching:CacheDetails:_array_index:6:Language = "en"
-        caching:CacheDetails:_array_index:7:BytesUsed = 0
-        caching:CacheDetails:_array_index:7:LocalizedType = "Music"
-        caching:CacheDetails:_array_index:7:MediaType = "Music"
-        caching:CacheDetails:_array_index:7:Language = "en"
-        caching:CacheDetails:_array_index:8:BytesUsed = 0
-        caching:CacheDetails:_array_index:8:LocalizedType = "Other"
-        caching:CacheDetails:_array_index:8:MediaType = "Other"
-        caching:CacheDetails:_array_index:8:Language = "en"
+        ...
         caching:PersonalCacheLimit = 70000000000
         caching:CacheUsed = 419351941
         caching:TotalBytesStored = 419351941
@@ -150,7 +123,6 @@ class OSXCachingService(PythonPlugin):
             'CacheLimit',
             'CacheUsed',
             'Port',
-            'RegistrationStatus',
             'ReservedVolumeSpace',
             ] 
 
