@@ -22,6 +22,8 @@ classes:
         enum: {true: "clear", false: "critical"}
         renderer: Zenoss.render.severity
         details_display: false
+        content_width: 35
+        label_width: 35
         order: 12
 
       AllowPersonalCaching:
@@ -81,18 +83,6 @@ classes:
         type: int
         grid_display: false
         order: 7
-
-      RegistrationStatus:
-        label: Registration
-        short_label: Reg
-        type: int
-        datapoint: caching_RegistrationStatus
-        enum: {0: "critical", 1: "clear"}
-        renderer: Zenoss.render.severity
-        # Enum doesn't want to display correctly
-        grid_display: false
-        details_display: false
-        order: 13
 
       ReservedVolumeSpace:
         label: Reserved Volume Space
@@ -178,8 +168,11 @@ device_classes:
             component: "${here/id}"
             datapoints:
               CacheFree: GAUGE
+              CacheStatus: GAUGE
               CacheUsed: GAUGE
               RegistrationStatus: GAUGE
+              StartupStatus: GAUGE
+              state: GAUGE
               TotalBytesDropped: DERIVE_MIN_0
               TotalBytesImported: DERIVE_MIN_0
               TotalBytesReturned: DERIVE_MIN_0
@@ -268,7 +261,7 @@ device_classes:
             # Workaround for Twisted Conch's incompatibility with OpenSSH 6.9
             commandTemplate: "/usr/bin/ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PasswordAuthentication=no -i ${device/zKeyPath} -l ${device/zCommandUsername} -p ${device/zCommandPort} ${device/manageIp} \"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\""
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
-            cycletime: 300
+            cycletime: 60
             component: "${here/id}"
             datapoints:
               BytesUsed: GAUGE
