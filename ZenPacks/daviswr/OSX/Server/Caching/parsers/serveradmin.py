@@ -1,5 +1,7 @@
-from Products.ZenRRD.CommandParser import CommandParser
-from Products.ZenUtils.Utils import prepId
+from Products.ZenRRD.CommandParser \
+    import CommandParser
+from Products.ZenUtils.Utils \
+    import prepId
 
 class serveradmin(CommandParser):
 
@@ -16,7 +18,7 @@ class serveradmin(CommandParser):
                 k = short.split(':')[1]
                 v = output.get(key).replace('"', '')
                 if not caches.has_key(idx):
-                  caches[idx] = dict()
+                    caches[idx] = dict()
                 caches[idx].update({k: v})
             else:
                 k = key.split(':')[1]
@@ -42,8 +44,32 @@ class serveradmin(CommandParser):
              ]
 
         for measure in datapoints:
-            value = int(service.get(measure))
-            components[component_id][measure] = value
+            if measure in service:
+                value = int(service[measure])
+                components[component_id][measure] = value
+
+        # Transform state strings into integers
+        # so they can be monitored by a performance template
+        attr_map = dict()
+        attr_map['CacheStatus'] = {
+            'OK': 1,
+            }
+
+        attr_map['StartupStatus'] = {
+            'OK': 1,
+            'PENDING': 2,
+            }
+
+        attr_map['state'] = {
+            'RUNNING': 1,
+            'STARTING': 2,
+            'STOPPED': 3,
+            }
+
+        for attr in attr_map:
+            if attr in service:
+                value = attr_map[attr].get(service[attr], 3)
+                components[component_id][attr] = value
 
         # Individual cache
         for idx in caches:
