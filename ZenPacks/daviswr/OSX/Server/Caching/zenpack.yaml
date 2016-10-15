@@ -181,15 +181,18 @@ device_classes:
               TotalBytesStoredFromPeers: DERIVE_MIN_0
 
         thresholds:
-          Registration:
+          Status:
             type: MinMaxThreshold
             enabled: true
-            dsnames:
-              - caching_RegistrationStatus
             severity: 3
             eventClass: /App/Failed
             minval: 1
             maxval: 1
+            dsnames:
+              - caching_CacheStatus
+              - caching_RegistrationStatus
+              - caching_StartupStatus
+              - caching_state
 
         graphs:
           DEFAULTS:
