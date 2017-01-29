@@ -185,7 +185,7 @@ device_classes:
             type: MinMaxThreshold
             enabled: true
             severity: 3
-            eventClass: /App/Failed
+            eventClass: /App/Cache
             minval: 1
             maxval: 1
             dsnames:
@@ -283,3 +283,43 @@ device_classes:
                 dpName: CacheDetails_BytesUsed
                 lineType: AREA
                 colorindex: 0
+
+
+event_classes:
+  /App/Cache:
+    remove: false
+    description: Apple OS X Server Caching Service events
+    transform: "from zenoss.protocols.protobufs import zep_pb2\n\
+\n\
+      if evt.eventKey.startswith('caching|caching_') \\\n\
+      \    and evt.eventKey.endswith('|Status'):\n\
+\n\
+      \    current = int(float(evt.current))\n\
+\n\
+      \    name = evt.eventKey.replace('caching|caching_', '').replace('|Status', '')\n\
+      \    if name.endswith('Status'):\n\
+      \        name = name[:-6]\n\
+      \    else:\n\
+      \        name = name.title()\n\
+\n\
+      \    state_dict = dict()\n\
+      \    state_dict['Cache'] = {1: 'OK'}\n\
+      \    state_dict['Registration'] = state_dict['Cache']\n\
+      \    state_dict['Startup'] = {\n\
+      \        1: 'OK',\n\
+      \        2: 'pending',\n\
+      \        }\n\
+      \    state_dict['State'] = {\n\
+      \        1: 'running',\n\
+      \        2: 'starting',\n\
+      \        3: 'stopped',\n\
+      \        }\n\
+      \    status = state_dict.get(name, dict()).get(current, 'unknown')\n\
+      \    evt.summary = '{0} is {1}'.format(name, status)\n\
+\n\
+      \    sev_dict = {\n\
+      \        1: zep_pb2.SEVERITY_CLEAR,\n\
+      \        2: zep_pb2.SEVERITY_WARNING,\n\
+      \        3: zep_pb2.SEVERITY_ERROR,\n\
+      \        }\n\
+      \    evt.severity = sev_dict.get(current, zep_pb2.SEVERITY_WARNING)"
