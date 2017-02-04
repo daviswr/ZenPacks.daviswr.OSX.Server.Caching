@@ -8,6 +8,7 @@ ZenPack to model & monitor the Caching Service in OS X Server
   * Tested with:
     * Server 5.0 on OS X 10.10 Yosemite
     * Server 5.1 on OS X 10.11 El Capitan
+    * Server 5.2 on OS X 10.11 El Capitan
     * Server 5.2 on macOS 10.12 Sierra
 * An account on the OS X host, which can
   * Log in via SSH with a key
