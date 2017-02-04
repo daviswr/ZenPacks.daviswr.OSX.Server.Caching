@@ -5,7 +5,10 @@ ZenPack to model & monitor the Caching Service in OS X Server
 ## Requirements
 
 * Apple OS X 10.8 or later with the Server package from the App Store
-  * Only tested with Server 5.0 (Yosemite) and 5.1 (El Capitan) so far...
+  * Tested with:
+    * Server 5.0 on OS X 10.10 Yosemite
+    * Server 5.1 on OS X 10.11 El Capitan
+    * Server 5.2 on macOS 10.12 Sierra
 * An account on the OS X host, which can
   * Log in via SSH with a key
   * Run the `serveradmin` command with "settings" and "fullstatus" parameters without password
@@ -18,7 +21,7 @@ Cmnd_Alias SERVERADMIN_SETTINGS = /Applications/Server.app/Contents/ServerRoot/u
 zenoss ALL=(ALL) NOPASSWD: SERVERADMIN_FULLSTATUS, SERVERADMIN_SETTINGS
 ```
 
-## El Capitan Issues
+## El Capitan & Later Issues
 
 El Capitan ships with OpenSSH 6.9 and disables Diffie-Hellman key exchanges with SHA-1 hashes, which the version of Twisted Conch, and thus ZenCommand, in Zenoss 4.2.5 SP671 (not tried 5.x) requires. These can be re-enabled, but...
 
@@ -28,4 +31,4 @@ This has been worked around by changing the modeler from a CommandPlugin to Pyth
 
 ## Usage
 
-I'm not going to make any assumptions about your device class organization, so it's up to you to configure the ~~`daviswr.cmd.OSXCachingService`~~ `daviswr.python.OSXCachingService` modeler on the appropriate class or device.
+I'm not going to make any assumptions about your device class organization, so it's up to you to configure the `daviswr.python.OSXCachingService` modeler on the appropriate class or device.
