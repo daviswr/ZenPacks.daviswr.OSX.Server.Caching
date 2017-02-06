@@ -185,7 +185,7 @@ device_classes:
             type: MinMaxThreshold
             enabled: true
             severity: 3
-            eventClass: /App/Cache
+            eventClass: /Status/CachingService
             minval: 1
             maxval: 1
             dsnames:
@@ -286,7 +286,7 @@ device_classes:
 
 
 event_classes:
-  /App/Cache:
+  /Status/CachingService:
     remove: false
     description: Apple OS X Server Caching Service events
     transform: "from zenoss.protocols.protobufs import zep_pb2\n\
@@ -322,4 +322,6 @@ event_classes:
       \        2: zep_pb2.SEVERITY_WARNING,\n\
       \        3: zep_pb2.SEVERITY_ERROR,\n\
       \        }\n\
-      \    evt.severity = sev_dict.get(current, zep_pb2.SEVERITY_WARNING)"
+      \    evt.severity = sev_dict.get(current, zep_pb2.SEVERITY_WARNING)\n\
+\n\
+      \    evt.eventClass = '/Status'"
