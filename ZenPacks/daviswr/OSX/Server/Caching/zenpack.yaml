@@ -160,9 +160,9 @@ device_classes:
             type: COMMAND
             # Default for usessh is false
             #usessh: true
-            #commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            #commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching; /bin/echo \"caching:PackageCountCustom = \\`/usr/bin/sudo /bin/ls /Library/Server/Caching/Data/ | /usr/bin/fgrep -c -v -e AssetInfo -e tmp\\`\""
             # Workaround for Twisted Conch's incompatibility with OpenSSH 6.9
-            commandTemplate: "/usr/bin/ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PasswordAuthentication=no -i ${device/zKeyPath} -l ${device/zCommandUsername} -p ${device/zCommandPort} ${device/manageIp} \"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\""
+            commandTemplate: "/usr/bin/ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o PasswordAuthentication=no -i ${device/zKeyPath} -l ${device/zCommandUsername} -p ${device/zCommandPort} ${device/manageIp} \"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching; /bin/echo \\\"caching:PackageCountCustom = \\`/usr/bin/sudo /bin/ls /Library/Server/Caching/Data/ | /usr/bin/fgrep -c -v -e AssetInfo -e tmp\\`\\\"\""
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
@@ -170,6 +170,7 @@ device_classes:
               CacheFree: GAUGE
               CacheStatus: GAUGE
               CacheUsed: GAUGE
+              PackageCountCustom: GAUGE
               RegistrationStatus: GAUGE
               StartupStatus: GAUGE
               state: GAUGE
@@ -215,6 +216,15 @@ device_classes:
               Free:
                 dpName: caching_CacheFree
                 color: cccccc
+
+          Cached Packages:
+            units: packages
+            miny: 0
+            graphpoints:
+              Cached:
+                lineType: AREA
+                dpName: caching_PackageCountCustom
+                colorindex: 0
 
           Cache Activity:
             units: bits/sec

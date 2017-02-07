@@ -19,7 +19,8 @@ Example entries in /etc/sudoers
 ```
 Cmnd_Alias SERVERADMIN_FULLSTATUS = /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus *
 Cmnd_Alias SERVERADMIN_SETTINGS = /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin settings *
-zenoss ALL=(ALL) NOPASSWD: SERVERADMIN_FULLSTATUS, SERVERADMIN_SETTINGS
+Cmnd_Alias LS_CACHEDATA = /bin/ls /Library/Server/Caching/Data/
+zenoss ALL=(ALL) NOPASSWD: SERVERADMIN_FULLSTATUS, SERVERADMIN_SETTINGS, LS_CACHEDATA
 ```
 
 ## El Capitan & Later Issues

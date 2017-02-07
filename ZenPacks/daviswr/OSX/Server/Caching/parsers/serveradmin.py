@@ -32,6 +32,7 @@ class serveradmin(CommandParser):
         datapoints = [
             'CacheFree',
             'CacheUsed',
+            'PackageCountCustom',
             'PersonalCacheFree',
             'PersonalCacheUsed',
             'RegistrationStatus',
@@ -41,7 +42,7 @@ class serveradmin(CommandParser):
             'TotalBytesStored',
             'TotalBytesStoredFromOrigin',
             'TotalBytesStoredFromPeers',
-             ]
+            ]
 
         for measure in datapoints:
             if measure in service:
