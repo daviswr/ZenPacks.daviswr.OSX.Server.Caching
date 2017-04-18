@@ -299,39 +299,52 @@ event_classes:
   /Status/CachingService:
     remove: false
     description: Apple OS X Server Caching Service events
-    transform: "from zenoss.protocols.protobufs import zep_pb2\n\
-\n\
-      if evt.eventKey.startswith('caching|caching_') \\\n\
-      \    and evt.eventKey.endswith('|Status'):\n\
-\n\
-      \    current = int(float(evt.current))\n\
-\n\
-      \    name = evt.eventKey.replace('caching|caching_', '').replace('|Status', '')\n\
-      \    if name.endswith('Status'):\n\
-      \        name = name[:-6]\n\
-      \    else:\n\
-      \        name = name.title()\n\
-\n\
-      \    state_dict = dict()\n\
-      \    state_dict['Cache'] = {1: 'OK'}\n\
-      \    state_dict['Registration'] = state_dict['Cache']\n\
-      \    state_dict['Startup'] = {\n\
-      \        1: 'OK',\n\
-      \        2: 'pending',\n\
-      \        }\n\
-      \    state_dict['State'] = {\n\
-      \        1: 'running',\n\
-      \        2: 'starting',\n\
-      \        3: 'stopped',\n\
-      \        }\n\
-      \    status = state_dict.get(name, dict()).get(current, 'unknown')\n\
-      \    evt.summary = '{0} is {1}'.format(name, status)\n\
-\n\
-      \    sev_dict = {\n\
-      \        1: zep_pb2.SEVERITY_CLEAR,\n\
-      \        2: zep_pb2.SEVERITY_WARNING,\n\
-      \        3: zep_pb2.SEVERITY_ERROR,\n\
-      \        }\n\
-      \    evt.severity = sev_dict.get(current, zep_pb2.SEVERITY_WARNING)\n\
-\n\
-      \    evt.eventClass = '/Status'"
+    transform: |-
+      from zenoss.protocols.protobufs import zep_pb2
+
+      # Example: caching|caching_state|Status
+      if evt.eventKey.startswith('caching|caching_') \
+          and evt.eventKey.endswith('|Status'):
+
+          current = int(float(evt.current))
+
+          name = evt.eventKey.replace('caching|caching_', '').replace('|Status', '')
+          if name.endswith('Status'):
+              name = name[:-6]
+          else:
+              name = name.title()
+
+          state_dict = dict()
+          state_dict['Cache'] = {1: 'OK'}
+          state_dict['Registration'] = state_dict['Cache']
+          state_dict['Startup'] = {
+              1: 'OK',
+              2: 'pending',
+              }
+          state_dict['State'] = {
+              1: 'running',
+              2: 'starting',
+              3: 'stopped',
+              }
+          status = state_dict.get(name, dict()).get(current, 'unknown')
+          evt.summary = '{0} is {1}'.format(name, status)
+
+          sev_dict = {
+              1: zep_pb2.SEVERITY_CLEAR,
+              2: zep_pb2.SEVERITY_WARNING,
+              3: zep_pb2.SEVERITY_ERROR,
+              }
+          evt.severity = sev_dict.get(current, zep_pb2.SEVERITY_WARNING)
+
+          # ZPL Components look for events in /Status rather than
+          # /Status/ClassName to determine up/down status
+          evt.eventClass = '/Status'
+
+          # Based on stock /Status/Perf class transform for ifOperStatus events
+          if component is not None:
+              bool_dict = {1: True, 2: False, 3: False}
+              if component.Active != bool_dict.get(current, False):
+                  @transact
+                  def updateDb():
+                      component.Active = bool_dict.get(current, False)
+                  updateDb()
