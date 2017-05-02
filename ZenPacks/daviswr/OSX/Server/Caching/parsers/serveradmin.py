@@ -3,12 +3,14 @@ from Products.ZenRRD.CommandParser \
 from Products.ZenUtils.Utils \
     import prepId
 
+
 class serveradmin(CommandParser):
 
     def processResults(self, cmd, result):
         components = dict()
 
-        output = dict(line.split(' = ') for line in cmd.result.output.splitlines())
+        lines = cmd.result.output.splitlines()
+        output = dict(line.split(' = ') for line in lines)
         service = dict()
         caches = dict()
         for key in output:
@@ -17,7 +19,7 @@ class serveradmin(CommandParser):
                 idx = int(short.split(':')[0])
                 k = short.split(':')[1]
                 v = output.get(key).replace('"', '')
-                if not caches.has_key(idx):
+                if idx not in caches:
                     caches[idx] = dict()
                 caches[idx].update({k: v})
             else:
@@ -75,9 +77,8 @@ class serveradmin(CommandParser):
         # Individual cache
         for idx in caches:
             cache = caches.get(idx)
-            component_id = prepId(cache.get('MediaType',
-                'Cache {}'.format(str(idx))) \
-                + '_' + cache.get('Language', ''))
+            alt_id = 'Cache {0}_{1}'.format(idx, cache.get('Language', ''))
+            component_id = prepId(cache.get('MediaType', alt_id))
             if component_id not in components:
                 components[component_id] = dict()
             value = int(cache.get('BytesUsed'))

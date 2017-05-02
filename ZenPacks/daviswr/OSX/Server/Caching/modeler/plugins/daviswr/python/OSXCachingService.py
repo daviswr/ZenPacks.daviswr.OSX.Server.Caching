@@ -6,6 +6,7 @@ from Products.DataCollector.plugins.CollectorPlugin \
 from Products.DataCollector.plugins.DataMaps \
     import MultiArgs, RelationshipMap, ObjectMap
 
+
 class OSXCachingService(PythonPlugin):
     req_properties = (
         'zKeyPath',
@@ -18,8 +19,10 @@ class OSXCachingService(PythonPlugin):
 
     def collect(self, device, log):
         # Command to run on monitored device.
-        serveradmin = '/Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin'
-        remote_cmd = '"sudo {0} settings caching; sudo {0} fullstatus caching"'.format(serveradmin)
+        serveradmin = '/Applications/Server.app/Contents/ServerRoot/' \
+                      'usr/sbin/serveradmin'
+        remote_cmd = '"sudo {0} settings caching; ' \
+                     'sudo {0} fullstatus caching"'.format(serveradmin)
         key_path = getattr(device, 'zKeyPath', '')
         cmd_port = getattr(device, 'zCommandPort', '')
         cmd_user = getattr(device, 'zCommandUsername', '')
@@ -28,7 +31,12 @@ class OSXCachingService(PythonPlugin):
         ssh_params = '-o UserKnownHostsFile=/dev/null ' \
                      '-o StrictHostKeyChecking=no ' \
                      '-o PasswordAuthentication=no ' \
-                     '-i {0} -l {1} -p {2} {3}'.format(key_path, cmd_user, cmd_port, dev_ip)
+                     '-i {0} -l {1} -p {2} {3}'.format(
+                         key_path,
+                         cmd_user,
+                         cmd_port,
+                         dev_ip
+                         )
         command = '{0} {1} {2}'.format(ssh_path, ssh_params, remote_cmd)
         log.debug('Caching Service modeler command: %s', command)
 
@@ -98,7 +106,7 @@ class OSXCachingService(PythonPlugin):
                 k = short.split(':')[1]
                 v = output.get(key).replace('"', '')
                 if idx not in caches:
-                  caches[idx] = dict()
+                    caches[idx] = dict()
                 caches[idx].update({k: v})
             else:
                 k = key.split(':')[1]
@@ -124,15 +132,17 @@ class OSXCachingService(PythonPlugin):
             'CacheUsed',
             'Port',
             'ReservedVolumeSpace',
-            ] 
+            ]
 
         for attr in integers:
             if attr in service:
                 service[attr] = int(service[attr])
 
         service['id'] = self.prepId('CachingService')
-        service['title'] = service.get('ServerRoot',
-            service.get('DataPath', 'Caching Service'))
+        service['title'] = service.get(
+            'ServerRoot',
+            service.get('DataPath', 'Caching Service')
+            )
         # Not listening, service likely not running
         if 'Port' in service and service.get('Port') == 0:
             del service['Port']
@@ -160,12 +170,13 @@ class OSXCachingService(PythonPlugin):
             if 'BytesUsed' in cache:
                 cache['BytesUsed'] = int(cache['BytesUsed'])
             lang = cache.get('Language', '')
-            suffix = ' ({})'.format(lang) if (len(lang) > 0) else ''
-            cache['id'] = self.prepId(cache.get('MediaType',
-                'Cache {}'.format(str(idx))) \
-                + '_' + lang)
-            cache['title'] = cache.get('LocalizedType',
-                cache.get('MediaType', 'Cache {}'.format(str(idx))) + 'suffix')
+            suffix = ' ({0})'.format(lang) if (len(lang) > 0) else ''
+            alt_id = 'Cache {0}_{1}'.format(idx, cache.get('Language', ''))
+            cache['id'] = self.prepId(cache.get('MediaType', alt_id))
+            cache['title'] = cache.get('LocalizedType', cache.get(
+                'MediaType',
+                'Cache {0}'.format(idx)
+                ) + suffix)
             log.debug('Individual Cache: %s', cache)
             rm.append(ObjectMap(
                 modname='ZenPacks.daviswr.OSX.Server.Caching.Cache',
