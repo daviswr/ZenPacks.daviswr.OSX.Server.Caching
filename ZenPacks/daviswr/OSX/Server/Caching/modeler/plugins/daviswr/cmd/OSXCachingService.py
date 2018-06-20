@@ -1,60 +1,21 @@
-import os
-import subprocess
-
 from Products.DataCollector.plugins.CollectorPlugin \
-    import PythonPlugin
+    import CommandPlugin
 from Products.DataCollector.plugins.DataMaps \
     import MultiArgs, RelationshipMap, ObjectMap
 
 
-class OSXCachingService(PythonPlugin):
-    req_properties = (
-        'zKeyPath',
-        'zCommandPort',
-        'zCommandUsername',
-        'manageIp',
-        )
-
-    deviceProperties = PythonPlugin.deviceProperties + req_properties
-
-    def collect(self, device, log):
-        # Command to run on monitored device.
-        serveradmin = '/Applications/Server.app/Contents/ServerRoot/' \
-                      'usr/sbin/serveradmin'
-        remote_cmd = '"sudo {0} settings caching; ' \
-                     'sudo {0} fullstatus caching"'.format(serveradmin)
-        key_path = getattr(device, 'zKeyPath', '')
-        cmd_port = getattr(device, 'zCommandPort', '')
-        cmd_user = getattr(device, 'zCommandUsername', '')
-        dev_ip = getattr(device, 'manageIp', '')
-        ssh_path = '/usr/bin/ssh'
-        ssh_params = '-o UserKnownHostsFile=/dev/null ' \
-                     '-o StrictHostKeyChecking=no ' \
-                     '-o PasswordAuthentication=no ' \
-                     '-i {0} -l {1} -p {2} {3}'.format(
-                         key_path,
-                         cmd_user,
-                         cmd_port,
-                         dev_ip
-                         )
-        command = '{0} {1} {2}'.format(ssh_path, ssh_params, remote_cmd)
-        log.debug('Caching Service modeler command: %s', command)
-
-        with open(os.devnull, 'w') as devnull:
-            ps = subprocess.Popen(
-                command,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=devnull)
-            output = ps.communicate()[0]
-
-        return output
+class OSXCachingService(CommandPlugin):
+    # Command to run on monitored device.
+    serveradmin = '/Applications/Server.app/Contents/ServerRoot/' \
+                  'usr/sbin/serveradmin'
+    command = 'sudo {0} settings caching; ' \
+              'sudo {0} fullstatus caching'.format(serveradmin)
 
     def process(self, device, results, log):
         log.info('processing %s for device %s', self.name(), device.id)
         maps = list()
 
-        """ Example output
+        """ Example output through 10.12
 
         caching:ReservedVolumeSpace = 25000000000
         caching:LogClientIdentity = yes
