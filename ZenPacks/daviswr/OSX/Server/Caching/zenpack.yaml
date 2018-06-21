@@ -289,6 +289,22 @@ device_classes:
                 colorindex: 0
 
 
+process_class_organizers:
+  macOS Content Cache:
+    remove: true
+    process_classes:
+      DEFAULTS:
+        excludeRegex: "\\b(vim|tail|grep|tar|cat|bash)\\b"
+        fail_severity: 4
+      servermgr_caching:
+        description: Caching server
+        includeRegex: servermgr_caching
+        replaceRegex: "\\/.*\\/(.*servermgr_caching.*)"
+        replacement: "\\1"
+      AssetCache:
+        description: Locally caches assets that were previously downloaded on your network
+        includeRegex: /usr/libexec/AssetCache/AssetCache
+
 event_classes:
   /Status/CachingService:
     remove: false
