@@ -8,9 +8,9 @@ classes:
   DEFAULTS:
     base: [zenpacklib.Component]
   CachingService:
-    label: Caching Service
+    label: Content Caching Service
     short_label: Service
-    plural_label: Caching Service
+    plural_label: Content Caching Service
     plural_short_label: Service
     order: 10
 
@@ -112,7 +112,8 @@ classes:
 
 
   Cache:
-    label: Cache
+    label: Content Cache
+    short_label: Cache
     order: 11
 
     relationships:
@@ -153,8 +154,9 @@ device_classes:
   /:
     remove: false
     templates:
-      CachingService:
+      ContentCachingService:
         targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.CachingService
+        description: macOS Content Caching service
         datasources:
           caching:
             type: COMMAND
@@ -183,7 +185,7 @@ device_classes:
             type: MinMaxThreshold
             enabled: true
             severity: 3
-            eventClass: /Status/CachingService
+            eventClass: /Status/MacContentCache
             minval: 1
             maxval: 1
             dsnames:
@@ -260,8 +262,9 @@ device_classes:
                 colorindex: 2
             
 
-      Cache:
+      ContentCache:
         targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.Cache
+        description: macOS Content Cache
         datasources:
           CacheDetails:
             type: COMMAND
@@ -306,9 +309,9 @@ process_class_organizers:
         includeRegex: /usr/libexec/AssetCache/AssetCache
 
 event_classes:
-  /Status/CachingService:
-    remove: false
-    description: Apple OS X Server Caching Service events
+  /Status/MacContentCache:
+    remove: true
+    description: macOS Content Cache events
     transform: |-
       from zenoss.protocols.protobufs import zep_pb2
 
