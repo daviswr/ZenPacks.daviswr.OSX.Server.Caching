@@ -13,6 +13,7 @@ class serveradmin(CommandParser):
         output = dict(line.split(' = ') for line in lines)
         service = dict()
         caches = dict()
+        peers = dict()
         for key in output:
             if key.startswith('caching:CacheDetails:'):
                 short = key.replace('caching:CacheDetails:_array_index:', '')
@@ -22,6 +23,16 @@ class serveradmin(CommandParser):
                 if idx not in caches:
                     caches[idx] = dict()
                 caches[idx].update({k: v})
+            elif key.startswith('caching:Peers:'):
+                short = key.replace('caching:Peers:_array_index:', '')
+                short = short.replace('details:', '')
+                if 'capabilities' not in key and 'local-network' not in key:
+                    idx = int(short.split(':')[0])
+                    k = short.split(':')[1]
+                    v = output.get(key).replace('"', '')
+                    if idx not in peers:
+                        peers[idx] = dict()
+                    peers[idx].update({k: v})
             else:
                 k = key.split(':')[1]
                 service.update({k: output.get(key).replace('"', '')})
@@ -71,7 +82,7 @@ class serveradmin(CommandParser):
 
         for attr in attr_map:
             if attr in service:
-                value = attr_map[attr].get(service[attr], 3)
+                value = attr_map[attr].get(service[attr], 0)
                 components[component_id][attr] = value
 
         # Individual cache
@@ -83,6 +94,24 @@ class serveradmin(CommandParser):
                 components[component_id] = dict()
             value = int(cache.get('BytesUsed'))
             components[component_id]['BytesUsed'] = value
+
+        # Peer server
+        health_map = {
+            'yes': 1,
+            'no': 2,
+            }
+
+        for idx in peers:
+            peer = peers.get(idx)
+            id_str = '{0}:{1}'.format(
+                peer.get('address', ''),
+                str(peer.get('port', ''))
+                )
+            component_id = prepId(id_str)
+            if component_id not in components:
+                components[component_id] = dict()
+            value = health_map.get(peer.get('healthy'), 0)
+            components[component_id]['healthy'] = value
 
         for point in cmd.points:
             if point.component in components:

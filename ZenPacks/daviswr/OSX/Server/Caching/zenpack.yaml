@@ -3,6 +3,7 @@ name: ZenPacks.daviswr.OSX.Server.Caching
 class_relationships:
   - Products.ZenModel.Device.Device(cachingService) 1:MC CachingService(server)
   - CachingService(caches) 1:MC Cache(cachingService)
+  - CachingService(contentCachePeers) 1:MC ContentCachePeer(cachingService)
 
 classes:
   DEFAULTS:
@@ -13,6 +14,10 @@ classes:
     plural_label: Content Caching Service
     plural_short_label: Service
     order: 10
+
+    relationships:
+      contentCachePeers:
+        grid_display: false
 
     properties:
       Active:
@@ -148,6 +153,84 @@ classes:
         type: string
         grid_display: false
         order: 1
+
+
+  ContentCachePeer:
+    label: Content Cache Peer
+    short_label: Peer
+    order: 12
+
+    relationships:
+      cachingService:
+        grid_display: false
+
+    properties:
+      ac-power:
+        label: AC Power
+        type: boolean
+        default: true
+        grid_display: false
+        order: 7
+
+      address:
+        label: IP Address
+        type: string
+        grid_display: false
+        details_display: false
+        order: 1
+
+      cache_size:
+        label: Size
+        type: int
+        renderer: Zenoss.render.byteString
+        grid_display: true
+        order: 4
+
+      friendly:
+        label: Friendly
+        type: boolean
+        default: true
+        grid_display: false
+        order: 6
+
+      guid:
+        label: GUID
+        type: string
+        grid_display: false
+        details_display: false
+
+      healthy:
+        label: Healthy
+        type: boolean
+        default: true
+        enum: {true: "clear", false: "critical"}
+        renderer: Zenoss.render.severity
+        grid_display: true
+        details_display: false
+        content_width: 35
+        label_width: 35
+        order: 5
+
+      is-portable:
+        label: Portable
+        type: boolean
+        default: false
+        grid_display: false
+        order: 7
+
+      port:
+        label: Port
+        type: string
+        grid_display: false
+        details_display: false
+        order: 2
+
+      version:
+        label: Version
+        type: string
+        grid_display: false
+        order: 3
+     
 
 
 device_classes:
@@ -291,6 +374,31 @@ device_classes:
                 lineType: AREA
                 colorindex: 0
 
+      ContentCachePeer:
+        targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.ContentCachePeer
+        description: macOS Peer Content Cache Server
+        datasources:
+          Peers:
+            type: COMMAND
+            usessh: true
+            commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
+            parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
+            cycletime: 60
+            component: "${here/id}"
+            datapoints:
+              healthy: GAUGE
+
+        thresholds:
+          PeerHealth:
+            type: MinMaxThreshold
+            enabled: true
+            severity: 3
+            eventClass: /Status/MacContentCache
+            minval: 1
+            maxval: 1
+            dsnames:
+              - Peers_healthy
+
 
 process_class_organizers:
   macOS Content Cache:
@@ -313,11 +421,15 @@ event_classes:
     remove: true
     description: macOS Content Cache events
     transform: |-
-      from zenoss.protocols.protobufs import zep_pb2
+      from zenoss.protocols.protobufs.zep_pb2 import (
+          SEVERITY_CLEAR,
+          SEVERITY_WARNING,
+          SEVERITY_ERROR
+          )
 
       # Example: caching|caching_state|Status
-      if evt.eventKey.startswith('caching|caching_') \
-          and evt.eventKey.endswith('|Status'):
+      if (evt.eventKey.startswith('caching|caching_')
+          and evt.eventKey.endswith('|Status')):
 
           current = int(float(evt.current))
 
@@ -328,7 +440,9 @@ event_classes:
               name = name.title()
 
           state_dict = dict()
-          state_dict['Cache'] = {1: 'OK'}
+          state_dict['Cache'] = {
+              1: 'OK',
+              }
           state_dict['Registration'] = state_dict['Cache']
           state_dict['Startup'] = {
               1: 'OK',
@@ -343,11 +457,11 @@ event_classes:
           evt.summary = '{0} is {1}'.format(name, status)
 
           sev_dict = {
-              1: zep_pb2.SEVERITY_CLEAR,
-              2: zep_pb2.SEVERITY_WARNING,
-              3: zep_pb2.SEVERITY_ERROR,
+              1: SEVERITY_CLEAR,
+              2: SEVERITY_WARNING,
+              3: SEVERITY_ERROR,
               }
-          evt.severity = sev_dict.get(current, zep_pb2.SEVERITY_WARNING)
+          evt.severity = sev_dict.get(current, SEVERITY_WARNING)
 
           # ZPL Components look for events in /Status rather than
           # /Status/ClassName to determine up/down status
@@ -355,9 +469,43 @@ event_classes:
 
           # Based on stock /Status/Perf class transform for ifOperStatus events
           if component is not None:
-              bool_dict = {1: True, 2: False, 3: False}
+              bool_dict = {
+                  1: True,
+                  2: False,
+                  3: False,
+                  }
               if component.Active != bool_dict.get(current, False):
                   @transact
                   def updateDb():
                       component.Active = bool_dict.get(current, False)
+                  updateDb()
+
+      elif ('Peers|Peers_healthy|PeerHealth' == evt.eventKey):
+          current = int(float(evt.current))
+
+          health_dict = {
+              1: 'healthy',
+              2: 'not healthy',
+              }
+
+          status = health_dict.get(current, 'unknown')
+          evt.summary = 'Peer {0} is {1}'.format(evt.component, status)
+
+          sev_dict = {
+              1: SEVERITY_CLEAR,
+              2: SEVERITY_WARNING,
+              }
+          evt.severity = sev_dict.get(current, SEVERITY_WARNING)
+
+          evt.eventClass = '/Status'
+
+          if component is not None:
+              bool_dict = {
+                  1: True,
+                  2: False
+                  }
+              if component.healthy != bool_dict.get(current, False):
+                  @transact
+                  def updateDb():
+                      component.healthy = bool_dict.get(current, False)
                   updateDb()

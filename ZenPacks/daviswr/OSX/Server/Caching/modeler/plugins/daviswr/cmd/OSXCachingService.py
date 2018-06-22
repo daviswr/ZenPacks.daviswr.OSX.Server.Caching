@@ -35,7 +35,23 @@ class OSXCachingService(CommandPlugin):
         caching:TotalBytesStoredFromOrigin = 419351941
         caching:state = "RUNNING"
         caching:Port = 49232
-        caching:Peers = _empty_array
+        caching:Peers:_array_index:0:address = "aaa.bbb.ccc.ddd"
+        caching:Peers:_array_index:0:port = 49094
+        caching:Peers:_array_index:0:details:capabilities:ur = yes
+        caching:Peers:_array_index:0:details:capabilities:sc = yes
+        caching:Peers:_array_index:0:details:capabilities:pc = no
+        caching:Peers:_array_index:0:details:capabilities:im = no
+        caching:Peers:_array_index:0:details:capabilities:ns = yes
+        caching:Peers:_array_index:0:details:capabilities:query-parameters = yes  # noqa
+        caching:Peers:_array_index:0:details:cache-size = 900000000000
+        caching:Peers:_array_index:0:details:ac-power = yes
+        caching:Peers:_array_index:0:details:is-portable = no
+        caching:Peers:_array_index:0:details:local-network:_array_index:0:speed = 1000  # noqa
+        caching:Peers:_array_index:0:details:local-network:_array_index:0:wired = yes  # noqa
+        caching:Peers:_array_index:0:healthy = yes
+        caching:Peers:_array_index:0:version = "161"
+        caching:Peers:_array_index:0:friendly = yes
+        caching:Peers:_array_index:0:guid = "9B9CDED4-F70C-4910-B7D4-11D1530AD34D"  # noqa
         caching:TotalBytesStoredFromPeers = 0
         caching:RestrictedMedia = no
         caching:CacheDetails:_array_index:0:BytesUsed = 0
@@ -60,6 +76,7 @@ class OSXCachingService(CommandPlugin):
         output = dict(line.split(' = ') for line in results.splitlines())
         service = dict()
         caches = dict()
+        peers = dict()
         for key in output:
             if key.startswith('caching:CacheDetails:'):
                 short = key.replace('caching:CacheDetails:_array_index:', '')
@@ -69,6 +86,16 @@ class OSXCachingService(CommandPlugin):
                 if idx not in caches:
                     caches[idx] = dict()
                 caches[idx].update({k: v})
+            elif key.startswith('caching:Peers:'):
+                short = key.replace('caching:Peers:_array_index:', '')
+                short = short.replace('details:', '')
+                if 'capabilities' not in key and 'local-network' not in key:
+                    idx = int(short.split(':')[0])
+                    k = short.split(':')[1]
+                    v = output.get(key).replace('"', '')
+                    if idx not in peers:
+                        peers[idx] = dict()
+                    peers[idx].update({k: v})
             else:
                 k = key.split(':')[1]
                 service.update({k: output.get(key).replace('"', '')})
@@ -142,6 +169,31 @@ class OSXCachingService(CommandPlugin):
             rm.append(ObjectMap(
                 modname='ZenPacks.daviswr.OSX.Server.Caching.Cache',
                 data=cache
+                ))
+        maps.append(rm)
+
+        # Peer Server components
+        rm = RelationshipMap(
+            compname='cachingService/CachingService',
+            relname='contentCachePeers',
+            modname='ZenPacks.daviswr.OSX.Server.Caching.ContentCachePeer'
+            )
+
+        for idx in peers:
+            peer = peers.get(idx)
+            for attr in ['cache-size', 'port']:
+                if attr in peer:
+                    cache[attr] = int(cache[attr])
+            id_str = '{0}:{1}'.format(
+                peer.get('address', ''),
+                str(peer.get('port', ''))
+                )
+            peer['title'] = id_str
+            peer['id'] = self.prepId(peer['title'])
+            log.debug('Peer Caching Server: %s', peer)
+            rm.append(ObjectMap(
+                modname='ZenPacks.daviswr.OSX.Server.Caching.ContentCachePeer',
+                data=peer
                 ))
         maps.append(rm)
 
