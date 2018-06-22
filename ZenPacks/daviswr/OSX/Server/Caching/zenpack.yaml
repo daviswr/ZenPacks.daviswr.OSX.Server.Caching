@@ -429,7 +429,7 @@ event_classes:
 
       # Example: caching|caching_state|Status
       if (evt.eventKey.startswith('caching|caching_')
-          and evt.eventKey.endswith('|Status')):
+              and evt.eventKey.endswith('|Status')):
 
           current = int(float(evt.current))
 
@@ -480,7 +480,7 @@ event_classes:
                       component.Active = bool_dict.get(current, False)
                   updateDb()
 
-      elif ('Peers|Peers_healthy|PeerHealth' == evt.eventKey):
+      elif 'Peers|Peers_healthy|PeerHealth' == evt.eventKey:
           current = int(float(evt.current))
 
           health_dict = {
