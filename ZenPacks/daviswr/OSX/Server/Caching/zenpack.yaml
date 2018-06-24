@@ -179,10 +179,10 @@ classes:
         details_display: false
         order: 1
 
-      cache_size:
+      cache-size:
         label: Size
         type: int
-        renderer: Zenoss.render.byteString
+        renderer: Zenoss.render.bytesString
         grid_display: true
         order: 4
 

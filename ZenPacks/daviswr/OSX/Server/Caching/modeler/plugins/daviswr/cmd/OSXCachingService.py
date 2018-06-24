@@ -179,11 +179,25 @@ class OSXCachingService(CommandPlugin):
             modname='ZenPacks.daviswr.OSX.Server.Caching.ContentCachePeer'
             )
 
+        peer_integers = [
+            'cache-size',
+            'port',
+            ]
+        peer_booleans = [
+            'ac-power',
+            'friendly',
+            'healthy',
+            'is-portable',
+            ]
+
         for idx in peers:
             peer = peers.get(idx)
-            for attr in ['cache-size', 'port']:
+            for attr in peer_integers:
                 if attr in peer:
-                    cache[attr] = int(cache[attr])
+                    peer[attr] = int(peer[attr])
+            for attr in peer_booleans:
+                if attr in peer:
+                    peer[attr] = True if 'yes' == peer[attr] else False
             id_str = '{0}:{1}'.format(
                 peer.get('address', ''),
                 str(peer.get('port', ''))
