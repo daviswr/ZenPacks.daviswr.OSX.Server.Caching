@@ -60,6 +60,8 @@ class serveradmin(CommandParser):
         for measure in datapoints:
             if measure in service:
                 value = int(service[measure])
+                if 'Free' in measure and value < 0:
+                    value = 0
                 components[component_id][measure] = value
 
         # Transform state strings into integers
@@ -67,11 +69,14 @@ class serveradmin(CommandParser):
         attr_map = dict()
         attr_map['CacheStatus'] = {
             'OK': 1,
+            'LOWSPACE': 2,
             }
 
         attr_map['StartupStatus'] = {
             'OK': 1,
             'PENDING': 2,
+            'FAILED': 3,
+            'NO_AUTO_ENABLE': 4,
             }
 
         attr_map['state'] = {
@@ -80,10 +85,25 @@ class serveradmin(CommandParser):
             'STOPPED': 3,
             }
 
+        attr_map['RegistrationError'] = {
+            'WIRELESS_PORTABLE_NOT_SUPPORTED': 2,
+            'INVALID_IP_RANGE': 3,
+            'PUBLIC_IP_NOT_IN_RANGE': 4,
+            'TOO_MANY_PRIVATE_ADDRESSES': 5,
+            }
+
+        attr_map['active'] = {
+            'yes': 1,
+            'no': 2,
+            }
+
         for attr in attr_map:
             if attr in service:
                 value = attr_map[attr].get(service[attr], 0)
                 components[component_id][attr] = value
+
+        if 'RegistrationError' not in components[component_id]:
+            components[component_id]['RegistrationError'] = 1
 
         # Individual cache
         for idx in caches:
