@@ -414,7 +414,7 @@ process_class_organizers:
         replacement: "\\1"
       AssetCache:
         description: Locally caches assets that were previously downloaded on your network
-        includeRegex: /usr/libexec/AssetCache/AssetCache
+        includeRegex: "^/.*/usr/libexec/AssetCache/AssetCache"
 
 event_classes:
   /Status/MacContentCache:
