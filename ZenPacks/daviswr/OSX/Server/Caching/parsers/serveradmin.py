@@ -86,15 +86,16 @@ class serveradmin(CommandParser):
             }
 
         attr_map['RegistrationError'] = {
-            'WIRELESS_PORTABLE_NOT_SUPPORTED': 2,
-            'INVALID_IP_RANGE': 3,
-            'PUBLIC_IP_NOT_IN_RANGE': 4,
-            'TOO_MANY_PRIVATE_ADDRESSES': 5,
+            'WIRELESS_PORTABLE_NOT_SUPPORTED': 3,
+            'INVALID_IP_RANGE': 4,
+            'PUBLIC_IP_NOT_IN_RANGE': 5,
+            'TOO_MANY_PRIVATE_ADDRESSES': 6,
+            'INVALID_DEVICE': 7,
             }
 
-        attr_map['active'] = {
+        attr_map['Active'] = {
             'yes': 1,
-            'no': 2,
+            'no': 3,
             }
 
         for attr in attr_map:

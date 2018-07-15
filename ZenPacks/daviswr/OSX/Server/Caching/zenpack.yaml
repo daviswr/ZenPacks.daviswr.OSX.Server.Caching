@@ -249,10 +249,12 @@ device_classes:
             cycletime: 60
             component: "${here/id}"
             datapoints:
+              Active: GAUGE
               CacheFree: GAUGE
               CacheStatus: GAUGE
               CacheUsed: GAUGE
               PackageCountCustom: GAUGE
+              RegistrationError: GAUGE
               RegistrationStatus: GAUGE
               StartupStatus: GAUGE
               state: GAUGE
@@ -272,7 +274,9 @@ device_classes:
             minval: 1
             maxval: 1
             dsnames:
+              - caching_Active
               - caching_CacheStatus
+              - caching_RegistrationError
               - caching_RegistrationStatus
               - caching_StartupStatus
               - caching_state
@@ -436,42 +440,65 @@ event_classes:
           name = evt.eventKey.replace('caching|caching_', '').replace('|Status', '')
           if name.endswith('Status'):
               name = name[:-6]
-          else:
-              name = name.title()
 
           state_dict = dict()
+          state_dict['Registration'] = {
+              -1: 'is not registered',
+              1: 'is registered',
+              }
           state_dict['Cache'] = {
-              1: 'OK',
+              1: 'is OK',
+              2: 'is low on space',
               }
-          state_dict['Registration'] = state_dict['Cache']
           state_dict['Startup'] = {
-              1: 'OK',
-              2: 'pending',
+              1: 'startup is OK',
+              2: 'startup is pending',
+              3: 'startup has failed',
+              4: 'startup is not auto-enabled',
               }
-          state_dict['State'] = {
-              1: 'running',
-              2: 'starting',
-              3: 'stopped',
+          state_dict['state'] = {
+              1: 'is running',
+              2: 'is starting',
+              3: 'is stopped',
               }
-          status = state_dict.get(name, dict()).get(current, 'unknown')
-          evt.summary = '{0} is {1}'.format(name, status)
+          state_dict['RegistrationError'] = {
+              3: 'registration error: wireless portable is not supported',
+              4: 'registration error: invalid IP range',
+              5: 'registration error: public IP not in range',
+              6: 'registration error: too many private addresses',
+              7: 'registration error: invalid device',
+              }
+          state_dict['Active'] = {
+              1: 'is active',
+              3: 'is not active',
+              }
+
+          status = state_dict.get(name, dict()).get(
+              current,
+              '{0} value unknown'.format(name)
+              )
+          evt.summary = 'Content Cache {0}'.format(status)
 
           sev_dict = {
+              -1: SEVERITY_ERROR,
               1: SEVERITY_CLEAR,
               2: SEVERITY_WARNING,
               3: SEVERITY_ERROR,
+              4: SEVERITY_ERROR,
+              5: SEVERITY_ERROR,
+              6: SEVERITY_ERROR,
+              7: SEVERITY_ERROR,
               }
           evt.severity = sev_dict.get(current, SEVERITY_WARNING)
 
           # ZPL Components look for events in /Status rather than
           # /Status/ClassName to determine up/down status
-          evt.eventClass = '/Status'
+          if current != 2:
+              evt.eventClass = '/Status'
 
-          # Based on stock /Status/Perf class transform for ifOperStatus events
-          if component is not None:
+          if ('Active' == name or 'state' == name) and component is not None:
               bool_dict = {
                   1: True,
-                  2: False,
                   3: False,
                   }
               if component.Active != bool_dict.get(current, False):
