@@ -94,13 +94,13 @@ class serveradmin(CommandParser):
             }
 
         attr_map['Active'] = {
+            'no': 0,
             'yes': 1,
-            'no': 3,
             }
 
         for attr in attr_map:
             if attr in service:
-                value = attr_map[attr].get(service[attr], 0)
+                value = attr_map[attr].get(service[attr], -2)
                 components[component_id][attr] = value
 
         if 'RegistrationError' not in components[component_id]:
@@ -109,8 +109,7 @@ class serveradmin(CommandParser):
         # Individual cache
         for idx in caches:
             cache = caches.get(idx)
-            alt_id = 'Cache {0}_{1}'.format(idx, cache.get('Language', ''))
-            component_id = prepId(cache.get('MediaType', alt_id))
+            component_id = prepId(cache.get('MediaType', ''))
             if component_id not in components:
                 components[component_id] = dict()
             value = int(cache.get('BytesUsed'))
@@ -119,14 +118,13 @@ class serveradmin(CommandParser):
         # Peer server
         health_map = {
             'yes': 1,
-            'no': 2,
+            'no': 0,
             }
 
         for idx in peers:
             peer = peers.get(idx)
-            id_str = '{0}:{1}'.format(
-                peer.get('address', ''),
-                str(peer.get('port', ''))
+            id_str = 'peercache_{0}'.format(
+                peer.get('address', peer.get('guid', ''))
                 )
             component_id = prepId(id_str)
             if component_id not in components:

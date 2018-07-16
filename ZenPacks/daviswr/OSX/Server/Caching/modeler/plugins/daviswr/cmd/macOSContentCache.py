@@ -4,7 +4,7 @@ from Products.DataCollector.plugins.DataMaps \
     import MultiArgs, RelationshipMap, ObjectMap
 
 
-class OSXCachingService(CommandPlugin):
+class macOSContentCache(CommandPlugin):
     # Command to run on monitored device.
     serveradmin = '/Applications/Server.app/Contents/ServerRoot/' \
                   'usr/sbin/serveradmin'
@@ -127,54 +127,45 @@ class OSXCachingService(CommandPlugin):
                 service[attr] = int(service[attr])
 
         service['id'] = self.prepId('CachingService')
-        service['title'] = service.get(
-            'ServerRoot',
-            service.get('DataPath', 'Caching Service')
-            )
+        service['title'] = service.get('DataPath', 'Content Caching')
         # Not listening, service likely not running
         if 'Port' in service and service.get('Port') == 0:
             del service['Port']
         log.debug('Caching Service\n%s', service)
 
         rm = RelationshipMap(
-            relname='cachingService',
-            modname='ZenPacks.daviswr.OSX.Server.Caching.CachingService'
+            relname='contentCachingService',
+            modname='ZenPacks.daviswr.OSX.Server.Caching.ContentCachingService'
             )
         rm.append(ObjectMap(
-            modname='ZenPacks.daviswr.OSX.Server.Caching.CachingService',
+            modname='ZenPacks.daviswr.OSX.Server.Caching.ContentCachingService',  # noqa
             data=service
             ))
         maps.append(rm)
 
         # Individual Cache components
         rm = RelationshipMap(
-            compname='cachingService/CachingService',
-            relname='caches',
-            modname='ZenPacks.daviswr.OSX.Server.Caching.Cache'
+            compname='contentCachingService/CachingService',
+            relname='contentCaches',
+            modname='ZenPacks.daviswr.OSX.Server.Caching.ContentCache'
             )
 
         for idx in caches:
             cache = caches.get(idx)
             if 'BytesUsed' in cache:
                 cache['BytesUsed'] = int(cache['BytesUsed'])
-            lang = cache.get('Language', '')
-            suffix = ' ({0})'.format(lang) if (len(lang) > 0) else ''
-            alt_id = 'Cache {0}_{1}'.format(idx, cache.get('Language', ''))
-            cache['id'] = self.prepId(cache.get('MediaType', alt_id))
-            cache['title'] = cache.get('LocalizedType', cache.get(
-                'MediaType',
-                'Cache {0}'.format(idx)
-                ) + suffix)
+            cache['title'] = self.prepId(cache.get('MediaType', ''))
+            cache['id'] = self.prepId(cache['title'])
             log.debug('Individual Cache: %s', cache)
             rm.append(ObjectMap(
-                modname='ZenPacks.daviswr.OSX.Server.Caching.Cache',
+                modname='ZenPacks.daviswr.OSX.Server.Caching.ContentCache',
                 data=cache
                 ))
         maps.append(rm)
 
         # Peer Server components
         rm = RelationshipMap(
-            compname='cachingService/CachingService',
+            compname='contentCachingService/CachingService',
             relname='contentCachePeers',
             modname='ZenPacks.daviswr.OSX.Server.Caching.ContentCachePeer'
             )
@@ -198,12 +189,11 @@ class OSXCachingService(CommandPlugin):
             for attr in peer_booleans:
                 if attr in peer:
                     peer[attr] = True if 'yes' == peer[attr] else False
-            id_str = '{0}:{1}'.format(
-                peer.get('address', ''),
-                str(peer.get('port', ''))
+            peer['title'] = peer.get('address', peer.get('guid', ''))
+            id_str = 'cachepeer_{0}'.format(
+                peer.get('address', peer.get('guid', ''))
                 )
-            peer['title'] = id_str
-            peer['id'] = self.prepId(peer['title'])
+            peer['id'] = self.prepId(id_str)
             log.debug('Peer Caching Server: %s', peer)
             rm.append(ObjectMap(
                 modname='ZenPacks.daviswr.OSX.Server.Caching.ContentCachePeer',

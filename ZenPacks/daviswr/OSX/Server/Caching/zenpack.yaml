@@ -1,14 +1,14 @@
 name: ZenPacks.daviswr.OSX.Server.Caching
 
 class_relationships:
-  - Products.ZenModel.Device.Device(cachingService) 1:MC CachingService(server)
-  - CachingService(caches) 1:MC Cache(cachingService)
-  - CachingService(contentCachePeers) 1:MC ContentCachePeer(cachingService)
+  - Products.ZenModel.Device.Device(contentCachingService) 1:MC ContentCachingService(server)
+  - ContentCachingService(contentCaches) 1:MC ContentCache(contentCachingService)
+  - ContentCachingService(contentCachePeers) 1:MC ContentCachePeer(contentCachingService)
 
 classes:
   DEFAULTS:
     base: [zenpacklib.Component]
-  CachingService:
+  ContentCachingService:
     label: Content Caching Service
     short_label: Service
     plural_label: Content Caching Service
@@ -19,6 +19,8 @@ classes:
       contentCachePeers:
         grid_display: false
 
+    # Defaults for 10.13+ caches from
+    # https://support.apple.com/guide/mac-help/configure-advanced-content-caching-settings-mchl91e7141a/mac
     properties:
       Active:
         label: Active
@@ -39,12 +41,6 @@ classes:
         grid_display: false
         order: 9
 
-      DataPath:
-        label: Path
-        type: string
-        grid_display: false
-        order: 1
-
       CacheFree:
         label: Free Space
         short_label: Free
@@ -57,6 +53,7 @@ classes:
         label: Size Limit
         short_label: Limit
         type: int
+        default: 0
         renderer: Zenoss.render.bytesString
         order: 2
 
@@ -68,10 +65,17 @@ classes:
         datapoint: caching_CacheUsed
         order: 3
 
+      DataPath:
+        label: Path
+        type: string
+        default: "/Library/Application Support/Apple/AssetCache/Data"
+        grid_display: false
+        order: 1
+
       LogClientIdentity:
         label: Client Identity Logging
         type: boolean
-        default: true
+        default: false
         grid_display: false
         order: 11
 
@@ -92,8 +96,10 @@ classes:
       ReservedVolumeSpace:
         label: Reserved Volume Space
         type: int
+        default: 2000000000
         renderer: Zenoss.render.bytesString
         grid_display: false
+        details_display: false
         order: 6
 
       RestrictedMedia:
@@ -109,20 +115,22 @@ classes:
         grid_display: false
         details_display: false
 
+      # Not supported by 10.13+ caches
       ServerRoot:
         label: Server Root
         type: string
         grid_display: false
+        details_display: false
         order: 5
 
 
-  Cache:
+  ContentCache:
     label: Content Cache
     short_label: Cache
     order: 11
 
     relationships:
-      cachingService:
+      contentCachingService:
         grid_display: false
 
     properties:
@@ -133,18 +141,22 @@ classes:
         datapoint: CacheDetails_BytesUsed
         order: 4
 
+      # Not supported by 10.13+ caches
       Language:
         label: Local Language
         short_label: Language
         type: string
         grid_display: false
+        details_display: false
         order: 2
 
+      # Not supported by 10.13+ caches 
       LocalizedType:
         label: Localized Type
         short_label: Localization
         type: string
         grid_display: false
+        details_display: false
         order: 3
 
       MediaType:
@@ -161,7 +173,7 @@ classes:
     order: 12
 
     relationships:
-      cachingService:
+      contentCachingService:
         grid_display: false
 
     properties:
@@ -218,6 +230,7 @@ classes:
         grid_display: false
         order: 7
 
+      # Not supported by 10.13+ caches
       port:
         label: Port
         type: string
@@ -238,7 +251,7 @@ device_classes:
     remove: false
     templates:
       ContentCachingService:
-        targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.CachingService
+        targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.ContentCachingService
         description: macOS Content Caching service
         datasources:
           caching:
@@ -350,7 +363,7 @@ device_classes:
             
 
       ContentCache:
-        targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.Cache
+        targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.ContentCache
         description: macOS Content Cache
         datasources:
           CacheDetails:
@@ -469,8 +482,8 @@ event_classes:
               7: 'registration error: invalid device',
               }
           state_dict['Active'] = {
+              0: 'is not active',
               1: 'is active',
-              3: 'is not active',
               }
 
           status = state_dict.get(name, dict()).get(
@@ -481,6 +494,7 @@ event_classes:
 
           sev_dict = {
               -1: SEVERITY_ERROR,
+              0: SEVERITY_WARNING,
               1: SEVERITY_CLEAR,
               2: SEVERITY_WARNING,
               3: SEVERITY_ERROR,
@@ -498,8 +512,8 @@ event_classes:
 
           if ('Active' == name or 'state' == name) and component is not None:
               bool_dict = {
+                  0: False,
                   1: True,
-                  3: False,
                   }
               if component.Active != bool_dict.get(current, False):
                   @transact
@@ -511,16 +525,16 @@ event_classes:
           current = int(float(evt.current))
 
           health_dict = {
+              0: 'not healthy',
               1: 'healthy',
-              2: 'not healthy',
               }
 
           status = health_dict.get(current, 'unknown')
           evt.summary = 'Peer {0} is {1}'.format(evt.component, status)
 
           sev_dict = {
+              0: SEVERITY_WARNING,
               1: SEVERITY_CLEAR,
-              2: SEVERITY_WARNING,
               }
           evt.severity = sev_dict.get(current, SEVERITY_WARNING)
 
