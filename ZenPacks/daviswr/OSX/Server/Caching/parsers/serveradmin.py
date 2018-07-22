@@ -12,7 +12,6 @@ class serveradmin(CommandParser):
         service = dict()
         caches = dict()
         peers = dict()
-        parents = dict()
         lines = cmd.result.output.splitlines()
 
         # Legacy output
@@ -65,11 +64,13 @@ class serveradmin(CommandParser):
                         break
 
                 peer_count = 0
-                for peer in service.get('Peers', dict()):
+                for peer in service.get('Peers', list()):
+                    peers[peer_count] = peer
+                    peer_count += 1
+                for peer in service.get('Parents', list()):
                     peers[peer_count] = peer
                     peer_count += 1
 
-                parents.update(service.get('Parents', dict()))
             # Generate missing datapoints
             total_returned = service.get('TotalBytesReturnedToClients', 0)
             total_returned += service.get('TotalBytesReturnedToChildren', 0)

@@ -88,7 +88,6 @@ class macOSContentCache(CommandPlugin):
         service = dict()
         caches = dict()
         peers = dict()
-        parents = dict()
         lines = results.splitlines()
 
         # Legacy output
@@ -138,15 +137,20 @@ class macOSContentCache(CommandPlugin):
                     if len(keys) - 1 == idx:
                         break
 
-                peer_count = 0
-                for peer in service.get('Peers', dict()):
-                    peers[peer_count] = peer
-                    peer_count += 1
-                    for attr in ('ac-power', 'cache-size', 'is-portable'):
-                        if attr in peer['details']:
-                            peer[attr] = peer['details'][attr]
-
-                parents.update(service.get('Parents', dict()))
+                # Settings output has an element named "Parents" as well
+                if output.get('name', 'status') != 'settings':
+                    peer_count = 0
+                    for peer in service.get('Peers', list()):
+                        peers[peer_count] = peer
+                        peer_count += 1
+                    for peer in service.get('Parents', list()):
+                        peer['is-parent'] = True
+                        peers[peer_count] = peer
+                        peer_count += 1
+                    for idx in peers:
+                        for attr in ('ac-power', 'cache-size', 'is-portable'):
+                            if attr in peers[idx]['details']:
+                                peers[idx][attr] = peers[idx]['details'][attr]
 
         # Caching Service
         booleans = [
@@ -162,7 +166,6 @@ class macOSContentCache(CommandPlugin):
                 service[attr] = True if 'yes' == service[attr] else False
 
         integers = [
-            #'Active',
             'CacheFree',
             'CacheLimit',
             'CacheUsed',
@@ -173,6 +176,12 @@ class macOSContentCache(CommandPlugin):
         for attr in integers:
             if attr in service and type(service[attr]) is not int:
                 service[attr] = int(service[attr])
+
+        # More realistic Cache Limit value if configured to "unlimited"
+        if service.get('CacheLimit', 0) == 0:
+            service['CacheLimit'] = service.get('CacheLimit', 0)
+            service['CacheLimit'] += service.get('CacheUsed', 0)
+            service['CacheLimit'] += service.get('CacheFree', 0)
 
         service['id'] = self.prepId('CachingService')
         service['title'] = service.get('DataPath', 'Content Caching')

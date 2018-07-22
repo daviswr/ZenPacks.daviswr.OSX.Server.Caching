@@ -182,13 +182,13 @@ classes:
         type: boolean
         default: true
         grid_display: false
-        order: 7
+        order: 8
 
       address:
         label: IP Address
         type: string
         grid_display: false
-        details_display: false
+        details_display: true
         order: 1
 
       cache-size:
@@ -203,7 +203,7 @@ classes:
         type: boolean
         default: true
         grid_display: false
-        order: 6
+        order: 7
 
       guid:
         label: GUID
@@ -223,19 +223,30 @@ classes:
         label_width: 35
         order: 5
 
+      is-parent:
+        label: Parent
+        type: boolean
+        default: false
+        enum: {true: "clear", false: "debug"}
+        renderer: Zenoss.render.severity
+        grid_display: true
+        details_display: false
+        content_width: 35
+        label_width: 35
+        order: 6
+
       is-portable:
         label: Portable
         type: boolean
         default: false
         grid_display: false
-        order: 7
+        order: 9
 
-      # Not supported by 10.13+ caches
       port:
         label: Port
         type: string
         grid_display: false
-        details_display: false
+        details_display: true
         order: 2
 
       version:
@@ -244,7 +255,6 @@ classes:
         grid_display: false
         order: 3
      
-
 
 device_classes:
   /:
@@ -427,14 +437,24 @@ process_class_organizers:
       DEFAULTS:
         excludeRegex: "\\b(vim|tail|grep|tar|cat|bash)\\b"
         fail_severity: 4
+
       servermgr_caching:
         description: Caching server
         includeRegex: servermgr_caching
         replaceRegex: "\\/.*\\/(.*servermgr_caching.*)"
         replacement: "\\1"
+
       AssetCache:
         description: Locally caches assets that were previously downloaded on your network
-        includeRegex: "^/.*/usr/libexec/AssetCache/AssetCache"
+        includeRegex: "/usr/libexec/AssetCache/AssetCache"
+        replaceRegex: ".*"
+        replacement: AssetCache
+
+      AssetCacheServices:
+        description: Service to manage macOS Content Caching
+        includeRegex: "AssetCacheServicesExtensions"
+        replaceRegex: ".*\\/(\\w+).xpc\\/.*"
+        replacement: "\\1"
 
 event_classes:
   /Status/MacContentCache:
