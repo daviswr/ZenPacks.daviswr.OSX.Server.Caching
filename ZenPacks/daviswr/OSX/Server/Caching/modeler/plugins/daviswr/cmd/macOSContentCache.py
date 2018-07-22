@@ -1,3 +1,4 @@
+import json
 from Products.DataCollector.plugins.CollectorPlugin \
     import CommandPlugin
 from Products.DataCollector.plugins.DataMaps \
@@ -6,10 +7,21 @@ from Products.DataCollector.plugins.DataMaps \
 
 class macOSContentCache(CommandPlugin):
     # Command to run on monitored device.
-    serveradmin = '/Applications/Server.app/Contents/ServerRoot/' \
-                  'usr/sbin/serveradmin'
-    command = 'sudo {0} settings caching; ' \
-              'sudo {0} fullstatus caching'.format(serveradmin)
+    command = (
+        'if [ -e "/usr/bin/AssetCacheManagerUtil" ];'
+        'then '
+        'cmd_base="/usr/bin/AssetCacheManagerUtil --json";'
+        'settings_cmd="${cmd_base} settings 2>/dev/null";'
+        'status_cmd="${cmd_base} status 2>/dev/null";'
+        'else '
+        'cmd_base="/usr/bin/sudo '
+        '/Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin";'
+        'settings_cmd="${cmd_base} settings caching";'
+        'status_cmd="${cmd_base} fullstatus caching";'
+        'fi;'
+        'eval ${settings_cmd};'
+        'eval ${status_cmd};'
+        )
 
     def process(self, device, results, log):
         log.info('processing %s for device %s', self.name(), device.id)
@@ -73,32 +85,68 @@ class macOSContentCache(CommandPlugin):
         """
 
         # Parse results
-        output = dict(line.split(' = ') for line in results.splitlines())
         service = dict()
         caches = dict()
         peers = dict()
-        for key in output:
-            if key.startswith('caching:CacheDetails:'):
-                short = key.replace('caching:CacheDetails:_array_index:', '')
-                idx = int(short.split(':')[0])
-                k = short.split(':')[1]
-                v = output.get(key).replace('"', '')
-                if idx not in caches:
-                    caches[idx] = dict()
-                caches[idx].update({k: v})
-            elif key.startswith('caching:Peers:'):
-                short = key.replace('caching:Peers:_array_index:', '')
-                short = short.replace('details:', '')
-                if 'capabilities' not in key and 'local-network' not in key:
+        parents = dict()
+        lines = results.splitlines()
+
+        # Legacy output
+        if not results.startswith('{'):
+            output = dict(line.split(' = ') for line in lines)
+            for key in output:
+                if key.startswith('caching:CacheDetails:'):
+                    short = key.replace(
+                        'caching:CacheDetails:_array_index:',
+                        ''
+                        )
                     idx = int(short.split(':')[0])
                     k = short.split(':')[1]
                     v = output.get(key).replace('"', '')
-                    if idx not in peers:
-                        peers[idx] = dict()
-                    peers[idx].update({k: v})
-            else:
-                k = key.split(':')[1]
-                service.update({k: output.get(key).replace('"', '')})
+                    if idx not in caches:
+                        caches[idx] = dict()
+                    caches[idx].update({k: v})
+                elif key.startswith('caching:Peers:'):
+                    short = key.replace('caching:Peers:_array_index:', '')
+                    short = short.replace('details:', '')
+                    if ('capabilities' not in key
+                            and 'local-network' not in key):
+                        idx = int(short.split(':')[0])
+                        k = short.split(':')[1]
+                        v = output.get(key).replace('"', '')
+                        if idx not in peers:
+                            peers[idx] = dict()
+                        peers[idx].update({k: v})
+                else:
+                    k = key.split(':')[1]
+                    service.update({k: output.get(key).replace('"', '')})
+
+        # JSON output
+        else:
+            for line in lines:
+                output = json.loads(line)
+                service.update(output.get('result', dict()))
+
+                # Mimic structure of legacy output
+                keys = service.get('CacheDetails', dict()).keys()
+                for idx in range(0, len(keys)):
+                    value = service.get('CacheDetails', dict()).get(keys[idx])
+                    caches[idx] = {
+                        'MediaType': keys[idx],
+                        'BytesUsed': value,
+                        }
+                    if len(keys) - 1 == idx:
+                        break
+
+                peer_count = 0
+                for peer in service.get('Peers', dict()):
+                    peers[peer_count] = peer
+                    peer_count += 1
+                    for attr in ('ac-power', 'cache-size', 'is-portable'):
+                        if attr in peer['details']:
+                            peer[attr] = peer['details'][attr]
+
+                parents.update(service.get('Parents', dict()))
 
         # Caching Service
         booleans = [
@@ -110,11 +158,11 @@ class macOSContentCache(CommandPlugin):
             ]
 
         for attr in booleans:
-            if attr in service:
+            if attr in service and type(service[attr]) is not bool:
                 service[attr] = True if 'yes' == service[attr] else False
 
         integers = [
-            'Active',
+            #'Active',
             'CacheFree',
             'CacheLimit',
             'CacheUsed',
@@ -123,11 +171,16 @@ class macOSContentCache(CommandPlugin):
             ]
 
         for attr in integers:
-            if attr in service:
+            if attr in service and type(service[attr]) is not int:
                 service[attr] = int(service[attr])
 
         service['id'] = self.prepId('CachingService')
         service['title'] = service.get('DataPath', 'Content Caching')
+
+        # Escape spaces in DataPath for zencommand later
+        if 'DataPath' in service:
+            service['DataPath'] = service['DataPath'].replace(' ', r'\ ')
+
         # Not listening, service likely not running
         if 'Port' in service and service.get('Port') == 0:
             del service['Port']
@@ -184,10 +237,10 @@ class macOSContentCache(CommandPlugin):
         for idx in peers:
             peer = peers.get(idx)
             for attr in peer_integers:
-                if attr in peer:
+                if attr in peer and type(peer[attr]) is not int:
                     peer[attr] = int(peer[attr])
             for attr in peer_booleans:
-                if attr in peer:
+                if attr in peer and type(peer[attr]) is not bool:
                     peer[attr] = True if 'yes' == peer[attr] else False
             peer['title'] = peer.get('address', peer.get('guid', ''))
             id_str = 'cachepeer_{0}'.format(

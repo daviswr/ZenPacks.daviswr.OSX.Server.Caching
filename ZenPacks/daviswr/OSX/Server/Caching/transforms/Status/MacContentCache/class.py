@@ -40,6 +40,7 @@ if (evt.eventKey.startswith('caching|caching_')
         5: 'registration error: public IP not in range',
         6: 'registration error: too many private addresses',
         7: 'registration error: invalid device',
+        8: 'registration error: not activated',
         }
     state_dict['Active'] = {
         1: 'is active',
@@ -61,6 +62,7 @@ if (evt.eventKey.startswith('caching|caching_')
         5: SEVERITY_ERROR,
         6: SEVERITY_ERROR,
         7: SEVERITY_ERROR,
+        8: SEVERITY_ERROR,
         }
     evt.severity = sev_dict.get(current, SEVERITY_WARNING)
 

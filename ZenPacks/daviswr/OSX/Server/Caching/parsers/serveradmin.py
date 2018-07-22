@@ -68,16 +68,17 @@ class serveradmin(CommandParser):
                 for peer in service.get('Peers', dict()):
                     peers[peer_count] = peer
                     peer_count += 1
-                    for attr in ('ac-power', 'is-portable'):
-                        if attr in peer['details']:
-                            peer[attr] = peer['details'][attr]
 
                 parents.update(service.get('Parents', dict()))
-            # Generate missing datapoint
+            # Generate missing datapoints
             total_returned = service.get('TotalBytesReturnedToClients', 0)
             total_returned += service.get('TotalBytesReturnedToChildren', 0)
             total_returned += service.get('TotalBytesReturnedToPeers', 0)
             service['TotalBytesReturned'] = total_returned
+            total_stored = service.get('TotalBytesStoredFromOrigin', 0)
+            total_stored += service.get('TotalBytesStoredFromParents', 0)
+            total_stored += service.get('TotalBytesStoredFromPeers', 0)
+            service['TotalBytesStored'] = total_stored
 
         # Caching Service
         component_id = prepId('CachingService')
@@ -137,6 +138,7 @@ class serveradmin(CommandParser):
             'PUBLIC_IP_NOT_IN_RANGE': 5,
             'TOO_MANY_PRIVATE_ADDRESSES': 6,
             'INVALID_DEVICE': 7,
+            'NOT_ACTIVATED': 8,
             }
 
         attr_map['Active'] = {
