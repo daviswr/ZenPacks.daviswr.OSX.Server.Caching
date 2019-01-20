@@ -26,7 +26,7 @@ Cmnd_Alias LS_CACHEDATA = /bin/ls /Library/Server/Caching/Data/
 zenoss ALL=(ALL) NOPASSWD: SERVERADMIN_FULLSTATUS, SERVERADMIN_SETTINGS, LS_CACHEDATA
 ```
  * `serveradmin` lines not required on macOS 10.13+
- * `LS_CACHEDATA` target path needs to match the 
+ * `LS_CACHEDATA` target path needs to match the "DataPath" attribute
 
 ## SSH Issues
 
