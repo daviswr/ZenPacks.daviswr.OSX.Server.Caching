@@ -1,7 +1,7 @@
 from zenoss.protocols.protobufs.zep_pb2 import (
     SEVERITY_CLEAR,
     SEVERITY_WARNING,
-    SEVERITY_ERROR,
+    SEVERITY_ERROR
     )
 
 # Example: caching|caching_state|Status
@@ -43,8 +43,8 @@ if (evt.eventKey.startswith('caching|caching_')
         8: 'registration error: not activated',
         }
     state_dict['Active'] = {
+        0: 'is not active',
         1: 'is active',
-        3: 'is not active',
         }
 
     status = state_dict.get(name, dict()).get(
@@ -55,6 +55,7 @@ if (evt.eventKey.startswith('caching|caching_')
 
     sev_dict = {
         -1: SEVERITY_ERROR,
+        0: SEVERITY_WARNING,
         1: SEVERITY_CLEAR,
         2: SEVERITY_WARNING,
         3: SEVERITY_ERROR,
@@ -71,9 +72,9 @@ if (evt.eventKey.startswith('caching|caching_')
     if current != 2:
         evt.eventClass = '/Status'
 
-    # Based on stock /Status/Perf class transform for ifOperStatus events
     if ('Active' == name or 'state' == name) and component is not None:
         bool_dict = {
+            0: False,
             1: True,
             3: False,
             }
@@ -83,21 +84,20 @@ if (evt.eventKey.startswith('caching|caching_')
                 component.Active = bool_dict.get(current, False)
             updateDb()
 
-
 elif 'Peers|Peers_healthy|PeerHealth' == evt.eventKey:
     current = int(float(evt.current))
 
     health_dict = {
+        0: 'not healthy',
         1: 'healthy',
-        2: 'not healthy',
         }
 
     status = health_dict.get(current, 'unknown')
     evt.summary = 'Peer {0} is {1}'.format(evt.component, status)
 
     sev_dict = {
+        0: SEVERITY_WARNING,
         1: SEVERITY_CLEAR,
-        2: SEVERITY_WARNING,
         }
     evt.severity = sev_dict.get(current, SEVERITY_WARNING)
 
@@ -105,8 +105,8 @@ elif 'Peers|Peers_healthy|PeerHealth' == evt.eventKey:
 
     if component is not None:
         bool_dict = {
+            0: False,
             1: True,
-            2: False
             }
         if component.healthy != bool_dict.get(current, False):
             @transact

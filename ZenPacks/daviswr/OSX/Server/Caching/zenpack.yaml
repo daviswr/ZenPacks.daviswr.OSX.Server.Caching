@@ -503,7 +503,7 @@ event_classes:
               5: 'registration error: public IP not in range',
               6: 'registration error: too many private addresses',
               7: 'registration error: invalid device',
-              8: 'registration error: not acticated',
+              8: 'registration error: not activated',
               }
           state_dict['Active'] = {
               0: 'is not active',
@@ -539,6 +539,7 @@ event_classes:
               bool_dict = {
                   0: False,
                   1: True,
+                  3: False,
                   }
               if component.Active != bool_dict.get(current, False):
                   @transact
@@ -567,8 +568,8 @@ event_classes:
 
           if component is not None:
               bool_dict = {
+                  0: False,
                   1: True,
-                  2: False
                   }
               if component.healthy != bool_dict.get(current, False):
                   @transact
