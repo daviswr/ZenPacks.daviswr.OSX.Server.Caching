@@ -17,6 +17,7 @@ if (evt.eventKey.startswith('caching|caching_')
     state_dict = dict()
     state_dict['Registration'] = {
         -1: 'is not registered',
+        0: 'is attempting registration',
         1: 'is registered',
         }
     state_dict['Cache'] = {
