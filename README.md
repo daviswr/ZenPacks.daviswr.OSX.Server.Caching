@@ -11,6 +11,7 @@ ZenPack to model & monitor the Content Caching Service in macOS
     * OS X 10.11 El Capitan with Server 5.2
     * macOS 10.12 Sierra with Server 5.2
     * macOS 10.13 High Sierra
+    * macOS 10.14 Mojave
 * An account on the macOS host, which can
   * Log in via SSH with a key
     * RSA or EC required for macOS 10.13+

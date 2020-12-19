@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2020-12-19
+### Fixed
+ * Minor event transform updates
+
 ## [1.1.0] - 2018-07-22
 Delete Caching Service components from devices monitored by this ZenPack or the devices themselves, then remove the previous version before installing this version. Class names have changed in keeping with Apple's nomenclature.
 
@@ -62,7 +66,8 @@ Final ZenPackLib 1.x release
 ## 0.8.1 - 2016-06-14
  * Alpha release
 
-[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.0...HEAD
+[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.1...HEAD
+[1.1.1]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/0.9.2...1.0.0
 [0.9.2]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/0.9.1...0.9.2
