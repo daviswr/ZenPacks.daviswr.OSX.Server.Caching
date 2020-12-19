@@ -18,6 +18,7 @@ ZenPack to model & monitor the Content Caching Service in macOS
   * Run `ls` on the "DataPath" returned by `serveradmin settings caching` or `AssetCacheManagerUtil settings`, with a trailing `/` character for compatibility with previous examples.
     * Default path on 10.13 is `/Library/Application\ Support/Apple/AssetCache/Data/` 
   * Server only: Run the `serveradmin` command with "settings" and "fullstatus" parameters without password
+* [ZenPackLib](https://help.zenoss.com/in/zenpack-catalog/open-source/zenpacklib)
 
 Example entries in /etc/sudoers
 ```
