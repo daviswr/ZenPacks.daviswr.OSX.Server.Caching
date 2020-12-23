@@ -4,11 +4,11 @@ from zenoss.protocols.protobufs.zep_pb2 import (
     SEVERITY_ERROR
     )
 
+current = int(float(evt.current))
+
 # Example: caching|caching_state|Status
 if (evt.eventKey.startswith('caching|caching_')
         and evt.eventKey.endswith('|Status')):
-
-    current = int(float(evt.current))
 
     name = evt.eventKey.replace('caching|caching_', '').replace('|Status', '')
     if name.endswith('Status'):
@@ -47,6 +47,10 @@ if (evt.eventKey.startswith('caching|caching_')
         0: 'is not active',
         1: 'is active',
         }
+    state_dict['DiskExceededCustom'] = {
+        1: 'size is within available volume capacity',
+        2: 'size exceeds available volume capacity',
+        }
 
     status = state_dict.get(name, dict()).get(
         current,
@@ -70,10 +74,12 @@ if (evt.eventKey.startswith('caching|caching_')
 
     # ZPL Components look for events in /Status rather than
     # /Status/ClassName to determine up/down status
-    if current != 2:
+    if current != 2 and name != 'DiskExceededCustom':
         evt.eventClass = '/Status'
 
-    if ('Active' == name or 'state' == name) and component is not None:
+    if (name in ['Active', 'state']
+            and component
+            and hasattr(component, 'Active')):
         bool_dict = {
             0: False,
             1: True,
@@ -86,8 +92,6 @@ if (evt.eventKey.startswith('caching|caching_')
             updateDb()
 
 elif 'Peers|Peers_healthy|PeerHealth' == evt.eventKey:
-    current = int(float(evt.current))
-
     health_dict = {
         0: 'not healthy',
         1: 'healthy',
@@ -104,7 +108,7 @@ elif 'Peers|Peers_healthy|PeerHealth' == evt.eventKey:
 
     evt.eventClass = '/Status'
 
-    if component is not None:
+    if component and hasattr(component, 'healthy'):
         bool_dict = {
             0: False,
             1: True,

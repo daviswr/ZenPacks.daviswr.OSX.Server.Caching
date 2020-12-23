@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.1.2] - 2020-12-23
+### Added
+ * Event generated when configured cache size limit minus cache used space exceeds volume free space
+
+### Fixed
+ * Cache free space calculation
+
 ## [1.1.1] - 2020-12-19
 ### Fixed
  * Minor event transform updates
@@ -66,11 +73,12 @@ Final ZenPackLib 1.x release
 ## 0.8.1 - 2016-06-14
  * Alpha release
 
-[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.1...HEAD
+[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.2...HEAD
+[1.1.2]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.0.0...1.1.0
 [1.0.0]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/0.9.2...1.0.0
 [0.9.2]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/0.9.1...0.9.2
 [0.9.1]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/0.9.0...0.9.1
-[0.9.0]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/0.8.2...0.9.0 
+[0.9.0]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/0.8.2...0.9.0
 [0.8.2]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/0.8.1...0.8.2

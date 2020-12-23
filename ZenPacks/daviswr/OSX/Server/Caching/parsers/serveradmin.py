@@ -1,8 +1,6 @@
 import json
-from Products.ZenRRD.CommandParser \
-    import CommandParser
-from Products.ZenUtils.Utils \
-    import prepId
+from Products.ZenRRD.CommandParser import CommandParser
+from Products.ZenUtils.Utils import prepId
 
 
 class serveradmin(CommandParser):
@@ -88,9 +86,11 @@ class serveradmin(CommandParser):
 
         datapoints = [
             'CacheFree',
+            'CacheLimit',
             'CacheUsed',
             'PackageCountCustom',
             'PersonalCacheFree',
+            'PersonalCacheLimit',
             'PersonalCacheUsed',
             'RegistrationStatus',
             'TotalBytesDropped',
@@ -108,8 +108,21 @@ class serveradmin(CommandParser):
         for measure in datapoints:
             if measure in service:
                 value = int(service[measure])
-                if 'Free' in measure and value < 0:
-                    value = 0
+                if 'Free' in measure:
+                    category = measure.replace('Free', '')
+                    limit = int(service.get(category + 'Limit', 0))
+                    used = int(service.get(category + 'Used', 0))
+                    if value < 0:
+                        # CacheLimit - CacheUsed > space available on disk
+                        # so CacheFree value is negative
+                        value = limit - used + value
+                        components[component_id]['DiskExceededCustom'] = 2
+                    else:
+                        # Unsure what CacheFree at 10 MB means when there's
+                        # a 20 GB difference between CacheLimit and CacheUsed
+                        value = limit - used - value
+                    if 'DiskExceededCustom' not in components[component_id]:
+                        components[component_id]['DiskExceededCustom'] = 1
                 components[component_id][measure] = value
 
         # Transform state strings into integers

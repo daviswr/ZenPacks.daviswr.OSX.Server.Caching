@@ -41,6 +41,8 @@ classes:
         grid_display: false
         order: 9
 
+      # macOS reports size in powers of 10 rather than 2
+      # but Zenoss.render.bytesString only does powers of 2
       CacheFree:
         label: Free Space
         short_label: Free
@@ -150,7 +152,7 @@ classes:
         details_display: false
         order: 2
 
-      # Not supported by 10.13+ caches 
+      # Not supported by 10.13+ caches
       LocalizedType:
         label: Localized Type
         short_label: Localization
@@ -254,7 +256,7 @@ classes:
         type: string
         grid_display: false
         order: 3
-     
+
 
 device_classes:
   /:
@@ -267,7 +269,6 @@ device_classes:
           caching:
             type: COMMAND
             usessh: true
-            #commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching; /bin/echo \"caching:PackageCountCustom = `/usr/bin/sudo /bin/ls /Library/Server/Caching/Data/ | /usr/bin/fgrep -c -v -e AssetInfo -e tmp`\""
             commandTemplate: "/bin/bash -c 'IFS=\"\"; pkg_count=$$(/usr/bin/sudo /bin/ls ${here/DataPath}/ | /usr/bin/fgrep --count --invert-match --regexp AssetInfo --regexp tmp); if [ -e \"/usr/bin/AssetCacheManagerUtil\" ]; then status_cmd=\"/usr/bin/AssetCacheManagerUtil --json status 2>/dev/null\"; count_output=\"{\\\"PackageCountCustom\\\":$${pkg_count}}\"; else status_cmd=\"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\"; count_output=\"caching:PackageCountCustom = $${pkg_count}\"; fi; eval $${status_cmd}; echo $${count_output}'"
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
@@ -277,6 +278,7 @@ device_classes:
               CacheFree: GAUGE
               CacheStatus: GAUGE
               CacheUsed: GAUGE
+              DiskExceededCustom: GAUGE
               PackageCountCustom: GAUGE
               RegistrationError: GAUGE
               RegistrationStatus: GAUGE
@@ -304,6 +306,7 @@ device_classes:
               - caching_RegistrationStatus
               - caching_StartupStatus
               - caching_state
+              - caching_DiskExceededCustom
 
         graphs:
           DEFAULTS:
@@ -312,8 +315,6 @@ device_classes:
 
           Cache Size:
             units: bytes
-            # OS X reports size in powers of 10 rather than 2
-            # but Zenoss.render.bytesString only does powers of 2
             base: true
             miny: 0
             graphpoints:
@@ -371,7 +372,7 @@ device_classes:
               Imported:
                 dpName: caching_TotalBytesImported
                 colorindex: 2
-            
+
 
       ContentCache:
         targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.ContentCache
@@ -380,7 +381,6 @@ device_classes:
           CacheDetails:
             type: COMMAND
             usessh: true
-            #commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
             commandTemplate: "/bin/bash -c 'if [ -e \"/usr/bin/AssetCacheManagerUtil\" ]; then status_cmd=\"/usr/bin/AssetCacheManagerUtil --json status 2>/dev/null\"; else status_cmd=\"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\"; fi; eval $${status_cmd}'"
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
@@ -410,7 +410,6 @@ device_classes:
           Peers:
             type: COMMAND
             usessh: true
-            #commandTemplate: "/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching"
             commandTemplate: "/bin/bash -c 'if [ -e \"/usr/bin/AssetCacheManagerUtil\" ]; then status_cmd=\"/usr/bin/AssetCacheManagerUtil --json status 2>/dev/null\"; else status_cmd=\"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\"; fi; eval $${status_cmd}'"
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
@@ -467,11 +466,11 @@ event_classes:
           SEVERITY_ERROR
           )
 
+      current = int(float(evt.current))
+
       # Example: caching|caching_state|Status
       if (evt.eventKey.startswith('caching|caching_')
               and evt.eventKey.endswith('|Status')):
-
-          current = int(float(evt.current))
 
           name = evt.eventKey.replace('caching|caching_', '').replace('|Status', '')
           if name.endswith('Status'):
@@ -510,6 +509,10 @@ event_classes:
               0: 'is not active',
               1: 'is active',
               }
+          state_dict['DiskExceededCustom'] = {
+              1: 'size is within available volume capacity',
+              2: 'size exceeds available volume capacity',
+              }
 
           status = state_dict.get(name, dict()).get(
               current,
@@ -533,10 +536,12 @@ event_classes:
 
           # ZPL Components look for events in /Status rather than
           # /Status/ClassName to determine up/down status
-          if current != 2:
+          if current != 2 and name != 'DiskExceededCustom':
               evt.eventClass = '/Status'
 
-          if ('Active' == name or 'state' == name) and component is not None:
+          if (name in ['Active', 'state']
+                  and component
+                  and hasattr(component, 'Active')):
               bool_dict = {
                   0: False,
                   1: True,
@@ -549,8 +554,6 @@ event_classes:
                   updateDb()
 
       elif 'Peers|Peers_healthy|PeerHealth' == evt.eventKey:
-          current = int(float(evt.current))
-
           health_dict = {
               0: 'not healthy',
               1: 'healthy',
@@ -567,7 +570,7 @@ event_classes:
 
           evt.eventClass = '/Status'
 
-          if component is not None:
+          if component and hasattr(component, 'healthy'):
               bool_dict = {
                   0: False,
                   1: True,
