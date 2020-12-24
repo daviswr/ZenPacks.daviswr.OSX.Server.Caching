@@ -108,22 +108,30 @@ class serveradmin(CommandParser):
         for measure in datapoints:
             if measure in service:
                 value = int(service[measure])
-                if 'Free' in measure:
-                    category = measure.replace('Free', '')
-                    limit = int(service.get(category + 'Limit', 0))
-                    used = int(service.get(category + 'Used', 0))
-                    if value < 0:
-                        # CacheLimit - CacheUsed > space available on disk
-                        # so CacheFree value is negative
-                        value = limit - used + value
-                        components[component_id]['DiskExceededCustom'] = 2
-                    else:
-                        # Unsure what CacheFree at 10 MB means when there's
-                        # a 20 GB difference between CacheLimit and CacheUsed
-                        value = limit - used - value
-                    if 'DiskExceededCustom' not in components[component_id]:
-                        components[component_id]['DiskExceededCustom'] = 1
                 components[component_id][measure] = value
+
+        # Fixups for unconfigured Cache Limit and negative Cache Free
+        for category in ['Cache', 'PersonalCache']:
+            limit = int(service.get(category + 'Limit', 0))
+            used = int(service.get(category + 'Used', 0))
+            free = int(service.get(category + 'Free', 0))
+            if free < 0:
+                limit = used if limit == 0 else limit
+                avail = limit - used
+                # CacheLimit - CacheUsed > space available on disk
+                # so CacheFree value is negative
+                free = avail + value if avail > 0 else 0
+                components[component_id]['DiskExceededCustom'] = 2
+            else:
+                limit = used + free if limit == 0 else limit
+                avail = limit - used
+                # Unsure what CacheFree of 10 MB means when there's
+                # a 20 GB difference between CacheLimit and CacheUsed
+                free = avail if avail > free else value
+            components[component_id][category + 'Limit'] = limit
+            components[component_id][category + 'Free'] = free
+            if 'DiskExceededCustom' not in components[component_id]:
+                components[component_id]['DiskExceededCustom'] = 1
 
         # Transform state strings into integers
         # so they can be monitored by a performance template

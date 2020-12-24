@@ -11,16 +11,16 @@ class macOSContentCache(CommandPlugin):
         'if [ -e "/usr/bin/AssetCacheManagerUtil" ];'
         'then '
         'cmd_base="/usr/bin/AssetCacheManagerUtil --json";'
-        'settings_cmd="${cmd_base} settings 2>/dev/null";'
-        'status_cmd="${cmd_base} status 2>/dev/null";'
+        'settings_cmd="$cmd_base settings 2>/dev/null";'
+        'status_cmd="$cmd_base status 2>/dev/null";'
         'else '
         'cmd_base="/usr/bin/sudo '
         '/Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin";'
-        'settings_cmd="${cmd_base} settings caching";'
-        'status_cmd="${cmd_base} fullstatus caching";'
+        'settings_cmd="$cmd_base settings caching";'
+        'status_cmd="$cmd_base fullstatus caching";'
         'fi;'
-        'eval ${settings_cmd};'
-        'eval ${status_cmd};'
+        'eval $settings_cmd;'
+        'eval $status_cmd;'
         )
 
     def process(self, device, results, log):
