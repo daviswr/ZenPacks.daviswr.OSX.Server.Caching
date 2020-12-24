@@ -120,14 +120,14 @@ class serveradmin(CommandParser):
                 avail = limit - used
                 # CacheLimit - CacheUsed > space available on disk
                 # so CacheFree value is negative
-                free = avail + value if avail > 0 else 0
+                free = avail + free if avail > 0 else 0
                 components[component_id]['DiskExceededCustom'] = 2
             else:
                 limit = used + free if limit == 0 else limit
                 avail = limit - used
                 # Unsure what CacheFree of 10 MB means when there's
                 # a 20 GB difference between CacheLimit and CacheUsed
-                free = avail if avail > free else value
+                free = avail if avail > free else free
             components[component_id][category + 'Limit'] = limit
             components[component_id][category + 'Free'] = free
             if 'DiskExceededCustom' not in components[component_id]:

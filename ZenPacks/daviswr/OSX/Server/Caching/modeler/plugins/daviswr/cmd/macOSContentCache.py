@@ -177,11 +177,40 @@ class macOSContentCache(CommandPlugin):
             if attr in service and type(service[attr]) is not int:
                 service[attr] = int(service[attr])
 
-        # More realistic Cache Limit value if configured to "unlimited"
-        if service.get('CacheLimit', 0) == 0:
-            service['CacheLimit'] = service.get('CacheLimit', 0)
-            service['CacheLimit'] += service.get('CacheUsed', 0)
-            service['CacheLimit'] += service.get('CacheFree', 0)
+        try:
+            # Fixups for unconfigured Cache Limit and negative Cache Free
+            cache_limit = service.get('CacheLimit', 0)
+            cache_used = service.get('CacheUsed', 0)
+            cache_free = service.get('CacheFree', 0)
+            log.debug('CacheLimit is: %s', str(cache_limit))
+            if cache_free < 0:
+                log.debug('Negative CacheFree value: %s', str(cache_free))
+                cache_limit = cache_used if cache_limit == 0 else cache_limit
+                cache_avail = cache_limit - cache_used
+                # CacheLimit - CacheUsed > space available on disk
+                # so CacheFree value is negative
+                cache_free = cache_avail + cache_free if cache_avail > 0 \
+                    else 0
+            else:
+                cache_limit = cache_used + cache_free if cache_limit == 0 \
+                    else cache_limit
+                cache_avail = cache_limit - cache_used
+                # Unsure what CacheFree of 10 MB means when there's
+                # a 20 GB difference between CacheLimit and CacheUsed
+                cache_free = cache_avail if cache_avail > cache_free \
+                    else cache_free
+            log.debug('New CacheLimit: %s', str(cache_limit))
+            log.debug('New CacheFree: %s', str(cache_free))
+            service['CacheLimit'] = cache_limit
+            service['CacheFree'] = cache_free
+
+        except Exception:
+            log.exception('Error in CacheLimit & CacheFree fixup')
+            # More realistic Cache Limit value if configured to "unlimited"
+            if service.get('CacheLimit', 0) == 0:
+                service['CacheLimit'] = service.get('CacheLimit', 0)
+                service['CacheLimit'] += service.get('CacheUsed', 0)
+                service['CacheLimit'] += service.get('CacheFree', 0)
 
         service['id'] = self.prepId('CachingService')
         service['title'] = service.get('DataPath', 'Content Caching')
