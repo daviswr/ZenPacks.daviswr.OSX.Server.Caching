@@ -269,7 +269,19 @@ device_classes:
           caching:
             type: COMMAND
             usessh: true
-            commandTemplate: "/bin/bash -c 'IFS=\"\"; pkg_count=$$(/usr/bin/sudo /bin/ls ${here/DataPath}/ | /usr/bin/fgrep --count --invert-match --regexp AssetInfo --regexp tmp); if [ -e \"/usr/bin/AssetCacheManagerUtil\" ]; then status_cmd=\"/usr/bin/AssetCacheManagerUtil --json status 2>/dev/null\"; count_output=\"{\\\"PackageCountCustom\\\":$${pkg_count}}\"; else status_cmd=\"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\"; count_output=\"caching:PackageCountCustom = $${pkg_count}\"; fi; eval $${status_cmd}; echo $${count_output}'"
+            commandTemplate: |-
+              $$ZENOTHING
+              IFS=""
+              pkg_count=$$(/usr/bin/env sudo ls ${here/DataPath}/ | fgrep --count --invert-match --regexp AssetInfo --regexp tmp)
+              if [ -e "/usr/bin/AssetCacheManagerUtil" ]
+              then
+                  /usr/bin/AssetCacheManagerUtil --json status 2>/dev/null
+                  echo "{\"PackageCountCustom\":$$pkg_count}"
+              else
+                  /usr/bin/env sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching
+                  echo "caching:PackageCountCustom = $$pkg_count"
+              fi
+
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
@@ -335,6 +347,7 @@ device_classes:
               Cached:
                 lineType: AREA
                 dpName: caching_PackageCountCustom
+                format: "%5.0lf"
                 colorindex: 0
 
           Cache Activity:
@@ -381,7 +394,15 @@ device_classes:
           CacheDetails:
             type: COMMAND
             usessh: true
-            commandTemplate: "/bin/bash -c 'if [ -e \"/usr/bin/AssetCacheManagerUtil\" ]; then status_cmd=\"/usr/bin/AssetCacheManagerUtil --json status 2>/dev/null\"; else status_cmd=\"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\"; fi; eval $${status_cmd}'"
+            commandTemplate: |-
+              $$ZENOTHING
+              if [ -e "/usr/bin/AssetCacheManagerUtil" ]
+              then
+                  /usr/bin/AssetCacheManagerUtil --json status 2>/dev/null
+              else
+                  /usr/bin/env sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching
+              fi
+
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
@@ -410,7 +431,15 @@ device_classes:
           Peers:
             type: COMMAND
             usessh: true
-            commandTemplate: "/bin/bash -c 'if [ -e \"/usr/bin/AssetCacheManagerUtil\" ]; then status_cmd=\"/usr/bin/AssetCacheManagerUtil --json status 2>/dev/null\"; else status_cmd=\"/usr/bin/sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching\"; fi; eval $${status_cmd}'"
+            commandTemplate: |-
+              $$ZENOTHING
+              if [ -e "/usr/bin/AssetCacheManagerUtil" ]
+              then
+                  /usr/bin/AssetCacheManagerUtil --json status 2>/dev/null
+              else
+                  /usr/bin/env sudo /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching
+              fi
+
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.serveradmin
             cycletime: 60
             component: "${here/id}"
