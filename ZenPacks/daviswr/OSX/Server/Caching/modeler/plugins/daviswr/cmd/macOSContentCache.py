@@ -1,8 +1,7 @@
 import json
-from Products.DataCollector.plugins.CollectorPlugin \
-    import CommandPlugin
-from Products.DataCollector.plugins.DataMaps \
-    import MultiArgs, RelationshipMap, ObjectMap
+
+from Products.DataCollector.plugins.CollectorPlugin import CommandPlugin
+from Products.DataCollector.plugins.DataMaps import ObjectMap, RelationshipMap
 
 
 class macOSContentCache(CommandPlugin):
@@ -11,16 +10,14 @@ class macOSContentCache(CommandPlugin):
         'if [ -e "/usr/bin/AssetCacheManagerUtil" ];'
         'then '
         'cmd_base="/usr/bin/AssetCacheManagerUtil --json";'
-        'settings_cmd="$cmd_base settings 2>/dev/null";'
-        'status_cmd="$cmd_base status 2>/dev/null";'
+        '$cmd_base settings 2>/dev/null;'
+        '$cmd_base status 2>/dev/null;'
         'else '
-        'cmd_base="/usr/bin/sudo '
+        'cmd_base="/usr/bin/env sudo '
         '/Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin";'
-        'settings_cmd="$cmd_base settings caching";'
-        'status_cmd="$cmd_base fullstatus caching";'
-        'fi;'
-        'eval $settings_cmd;'
-        'eval $status_cmd;'
+        '$cmd_base settings caching;'
+        '$cmd_base fullstatus caching;'
+        'fi'
         )
 
     def process(self, device, results, log):
@@ -162,7 +159,7 @@ class macOSContentCache(CommandPlugin):
             ]
 
         for attr in booleans:
-            if attr in service and type(service[attr]) is not bool:
+            if attr in service and not isinstance(service[attr], bool):
                 service[attr] = True if 'yes' == service[attr] else False
 
         integers = [
@@ -174,7 +171,7 @@ class macOSContentCache(CommandPlugin):
             ]
 
         for attr in integers:
-            if attr in service and type(service[attr]) is not int:
+            if attr in service and not isinstance(service[attr], int):
                 service[attr] = int(service[attr])
 
         try:
@@ -275,10 +272,10 @@ class macOSContentCache(CommandPlugin):
         for idx in peers:
             peer = peers.get(idx)
             for attr in peer_integers:
-                if attr in peer and type(peer[attr]) is not int:
+                if attr in peer and not isinstance(peer[attr], int):
                     peer[attr] = int(peer[attr])
             for attr in peer_booleans:
-                if attr in peer and type(peer[attr]) is not bool:
+                if attr in peer and not isinstance(peer[attr], bool):
                     peer[attr] = True if 'yes' == peer[attr] else False
             peer['title'] = peer.get('address', peer.get('guid', ''))
             id_str = 'cachepeer_{0}'.format(
