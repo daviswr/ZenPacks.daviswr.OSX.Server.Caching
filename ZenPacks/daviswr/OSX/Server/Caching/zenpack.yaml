@@ -313,7 +313,6 @@ device_classes:
               if [ -e "/usr/bin/AssetCacheManagerUtil" ]
               then
                   db_path="/Library/Application Support/Apple/AssetCache/Metrics/Metrics.db"
-                  query_body="FROM ZMETRIC WHERE Date(978307200 + ZCREATIONDATE, 'unixepoch') = '$$date_today'"
                   sqlite3 -line "$$db_path" "\
                     SELECT Sum(ZBYTESDROPPED) AS 'bytes.dropped',\
                            Sum(ZBYTESFROMCACHETOCLIENT) AS 'bytes.fromcache.toclients',\
