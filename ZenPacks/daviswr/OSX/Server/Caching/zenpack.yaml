@@ -288,6 +288,7 @@ device_classes:
             datapoints:
               Active: GAUGE
               CacheFree: GAUGE
+              CacheHitRatioCustom: GAUGE
               CacheStatus: GAUGE
               CacheUsed: GAUGE
               DiskExceededCustom: GAUGE
@@ -302,6 +303,92 @@ device_classes:
               TotalBytesStored: DERIVE_MIN_0
               TotalBytesStoredFromOrigin: DERIVE_MIN_0
               TotalBytesStoredFromPeers: DERIVE_MIN_0
+
+          metrics:
+            type: COMMAND
+            usessh: true
+            commandTemplate: |-
+              $$ZENOTHING
+              date_today=$$(date -j '+%Y-%m-%d')
+              if [ -e "/usr/bin/AssetCacheManagerUtil" ]
+              then
+                  db_path="/Library/Application Support/Apple/AssetCache/Metrics/Metrics.db"
+                  query_body="FROM ZMETRIC WHERE Date(978307200 + ZCREATIONDATE, 'unixepoch') = '$$date_today'"
+                  sqlite3 -line "$$db_path" "\
+                    SELECT Sum(ZBYTESDROPPED) AS 'bytes.dropped',\
+                           Sum(ZBYTESFROMCACHETOCLIENT) AS 'bytes.fromcache.toclients',\
+                           Sum(ZBYTESFROMCACHETOPEER) AS 'bytes.fromcache.topeers',\
+                           Sum(ZBYTESFROMORIGINTOCLIENT) AS 'bytes.fromorigin.toclients',\
+                           Sum(ZBYTESFROMORIGINTOPEER) AS 'bytes.fromorigin.topeers',\
+                           Sum(ZBYTESFROMPEERTOCLIENT) AS 'bytes.frompeers.toclients',\
+                           Sum(ZBYTESIMPORTEDBYHTTP) AS 'bytes.imported.byhttp',\
+                           Sum(ZBYTESIMPORTEDBYXPC) AS 'bytes.imported.byxpc',\
+                           Sum(ZBYTESPURGEDTOTAL) AS 'bytes.purged.total',\
+                           Sum(ZBYTESPURGEDYOUNGERTHAN1DAY) AS 'bytes.purged.youngerthan1day',\
+                           Sum(ZBYTESPURGEDYOUNGERTHAN30DAYS) AS 'bytes.purged.youngerthan30days',\
+                           Sum(ZBYTESPURGEDYOUNGERTHAN7DAYS) AS 'bytes.purged.youngerthan7days',\
+                           Sum(ZIMPORTSBYHTTP) AS 'imports.byhttp',\
+                           Sum(ZIMPORTSBYXPC) AS 'imports.byxpc',\
+                           Sum(ZREPLIESFROMCACHETOCLIENT) AS 'replies.fromcache.toclients',\
+                           Sum(ZREPLIESFROMCACHETOPEER) AS 'replies.fromcache.topeers',\
+                           Sum(ZREPLIESFROMORIGINTOCLIENT) AS 'replies.fromorigin.toclients',\
+                           Sum(ZREPLIESFROMORIGINTOPEER) AS 'replies.fromorigin.topeers',\
+                           Sum(ZREPLIESFROMPEERTOCLIENT) AS 'replies.frompeers.toclients',\
+                           Sum(ZREQUESTSFROMCLIENT) AS 'requests.fromclients',\
+                           Sum(ZREQUESTSFROMPEER) AS 'requests.frompeers'\
+                    FROM ZMETRIC WHERE Date(978307200 + ZCREATIONDATE, 'unixepoch') = '$$date_today'"
+              else
+                  db_path="${here/ServerRoot}/Caching/Logs/Metrics.sqlite"
+                  query_body="FROM statsData WHERE Date(collectionDate, 'unixepoch') = '$$date_today' AND metricName ="
+                  sqlite3 -line "$$db_path" "\
+                      SELECT Sum(dataValue) AS 'bytes.dropped' $$query_body 'bytes.dropped';\
+                      SELECT Sum(dataValue) AS 'bytes.fromcache.toclients' $$query_body 'bytes.fromcache.toclients';\
+                      SELECT Sum(dataValue) AS 'bytes.fromcache.topeers' $$query_body 'bytes.fromcache.topeers';\
+                      SELECT Sum(dataValue) AS 'bytes.fromorigin.toclients' $$query_body 'bytes.fromorigin.toclients';\
+                      SELECT Sum(dataValue) AS 'bytes.fromorigin.topeers' $$query_body 'bytes.fromorigin.topeers';\
+                      SELECT Sum(dataValue) AS 'bytes.frompeers.toclients' $$query_body 'bytes.frompeers.toclients';\
+                      SELECT Sum(dataValue) AS 'bytes.imported.byhttp' $$query_body 'bytes.imported.byhttp';\
+                      SELECT Sum(dataValue) AS 'bytes.imported.byxpc' $$query_body 'bytes.imported.byxpc';\
+                      SELECT Sum(dataValue) AS 'bytes.purged.total' $$query_body 'bytes.purged.total';\
+                      SELECT Sum(dataValue) AS 'bytes.purged.youngerthan1day' $$query_body 'bytes.purged.youngerthan1day';\
+                      SELECT Sum(dataValue) AS 'bytes.purged.youngerthan30days' $$query_body 'bytes.purged.youngerthan30days';\
+                      SELECT Sum(dataValue) AS 'bytes.purged.youngerthan7days' $$query_body 'bytes.purged.youngerthan7days';\
+                      SELECT Sum(dataValue) AS 'imports.byhttp' $$query_body 'imports.byhttp';\
+                      SELECT Sum(dataValue) AS 'imports.byxpc' $$query_body 'imports.byxpc';\
+                      SELECT Sum(dataValue) AS 'replies.fromcache.toclients' $$query_body 'replies.fromcache.toclients';\
+                      SELECT Sum(dataValue) AS 'replies.fromcache.topeers' $$query_body 'replies.fromcache.topeers';\
+                      SELECT Sum(dataValue) AS 'replies.fromorigin.toclients' $$query_body 'replies.fromorigin.toclients';\
+                      SELECT Sum(dataValue) AS 'replies.fromorigin.topeers' $$query_body 'replies.fromorigin.topeers';\
+                      SELECT Sum(dataValue) AS 'replies.frompeers.toclients' $$query_body 'replies.frompeers.toclients';\
+                      SELECT Sum(dataValue) AS 'requests.fromclients' $$query_body 'requests.fromclients';\
+                      SELECT Sum(dataValue) AS 'requests.frompeers' $$query_body 'requests.frompeers'"
+              fi
+
+            parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.sqlite
+            cycletime: 60
+            component: "${here/id}"
+            datapoints:
+              bytes.dropped: DERIVE_MIN_0
+              bytes.fromcache.toclients: DERIVE_MIN_0
+              bytes.fromcache.topeers: DERIVE_MIN_0
+              bytes.fromorigin.toclients: DERIVE_MIN_0
+              bytes.fromorigin.topeers: DERIVE_MIN_0
+              bytes.frompeers.toclients: DERIVE_MIN_0
+              bytes.imported.byhttp: DERIVE_MIN_0
+              bytes.imported.byxpc: DERIVE_MIN_0
+              bytes.purged.total: DERIVE_MIN_0
+              bytes.purged.youngerthan1day: DERIVE_MIN_0
+              bytes.purged.youngerthan30days: DERIVE_MIN_0
+              bytes.purged.youngerthan7days: DERIVE_MIN_0
+              imports.byhttp: DERIVE_MIN_0
+              imports.byxpc: DERIVE_MIN_0
+              replies.fromcache.toclients: DERIVE_MIN_0
+              replies.fromcache.topeers: DERIVE_MIN_0
+              replies.fromorigin.toclients: DERIVE_MIN_0
+              replies.fromorigin.topeers: DERIVE_MIN_0
+              replies.frompeers.toclients: DERIVE_MIN_0
+              requests.fromclients: DERIVE_MIN_0
+              requests.frompeers: DERIVE_MIN_0
 
         thresholds:
           Status:
@@ -324,11 +411,11 @@ device_classes:
           DEFAULTS:
             height: 100
             width: 500
+            miny: 0
 
           Cache Size:
             units: bytes
             base: true
-            miny: 0
             graphpoints:
               DEFAULTS:
                 lineType: AREA
@@ -342,17 +429,15 @@ device_classes:
 
           Cached Packages:
             units: packages
-            miny: 0
             graphpoints:
               Cached:
-                lineType: AREA
                 dpName: caching_PackageCountCustom
+                lineType: AREA
                 format: "%5.0lf"
                 colorindex: 0
 
           Cache Activity:
             units: bits/sec
-            miny: 0
             graphpoints:
               DEFAULTS:
                 lineType: LINE
@@ -370,7 +455,6 @@ device_classes:
 
           Cache Source Activity:
             units: bits/sec
-            miny: 0
             graphpoints:
               DEFAULTS:
                 lineType: LINE
@@ -386,6 +470,16 @@ device_classes:
                 dpName: caching_TotalBytesImported
                 colorindex: 2
 
+          Cache Hit Ratio:
+            units: ratio
+            miny: 1
+            graphpoints:
+              Ratio:
+                dpName: caching_CacheHitRatioCustom
+                lineType: LINE
+                lineWidth: 2
+                format: "%5.2lf"
+                colorindex: 0
 
       ContentCache:
         targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.ContentCache
