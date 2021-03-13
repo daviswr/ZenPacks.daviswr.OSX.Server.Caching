@@ -110,6 +110,17 @@ class serveradmin(CommandParser):
                 value = int(service[measure])
                 components[component_id][measure] = value
 
+        # Calculate cache hit ratio
+        # TotalBytesReturned & TotalBytesStored are used as Derive/Counter
+        # datapoints in Zenoss, and the ratio can't be calculated from the rate
+        if ('TotalBytesReturned' in components[component_id]
+                and 'TotalBytesStored' in components[component_id]
+                and components[component_id]['TotalBytesStored'] > 0):
+            returned = components[component_id]['TotalBytesReturned']
+            stored = components[component_id]['TotalBytesStored']
+            ratio = float(returned) / float(stored)
+            components[component_id]['CacheHitRatioCustom'] = ratio
+
         # Fixups for unconfigured Cache Limit and negative Cache Free
         for category in ['Cache', 'PersonalCache']:
             limit = int(service.get(category + 'Limit', 0))
