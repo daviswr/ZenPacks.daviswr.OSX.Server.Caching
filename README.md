@@ -12,23 +12,33 @@ ZenPack to model & monitor the Content Caching Service in macOS
     * macOS 10.12 Sierra with Server 5.2
     * macOS 10.13 High Sierra
     * macOS 10.14 Mojave
-* An account on the macOS host, which can
+* An account on the macOS host with sudo permission, which can:
   * Log in via SSH with a key
     * RSA or EC required for macOS 10.13+
   * Run `ls` on the "DataPath" returned by `serveradmin settings caching` or `AssetCacheManagerUtil settings`, with a trailing `/` character for compatibility with previous examples.
-    * Default path on 10.13 is `/Library/Application\ Support/Apple/AssetCache/Data/` 
+    * Default path on 10.13+ is `/Library/Application\ Support/Apple/AssetCache/Data/`
+    * Prior default path is `/Library/Server/Caching/Data/`
+  * Open `AssetInfo.db` in the "DataPath" directory with `sqlite3`
   * Server only: Run the `serveradmin` command with "settings" and "fullstatus" parameters without password
 * [ZenPackLib](https://help.zenoss.com/in/zenpack-catalog/open-source/zenpacklib)
 
-Example entries in /etc/sudoers
+### Example entries in /etc/sudoers
+
+Up to 10.12 Sierra
 ```
-Cmnd_Alias SERVERADMIN_FULLSTATUS = /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus *
-Cmnd_Alias SERVERADMIN_SETTINGS = /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin settings *
+Cmnd_Alias SERVERADMIN_FULLSTATUS = /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin fullstatus caching
+Cmnd_Alias SERVERADMIN_SETTINGS = /Applications/Server.app/Contents/ServerRoot/usr/sbin/serveradmin settings caching
 Cmnd_Alias LS_CACHEDATA = /bin/ls /Library/Server/Caching/Data/
-zenoss ALL=(ALL) NOPASSWD: SERVERADMIN_FULLSTATUS, SERVERADMIN_SETTINGS, LS_CACHEDATA
+Cmnd_Alias ASSETINFO_DB = /usr/bin/sqlite3 -cmd .timeout\ * -line file\:/Library/Server/Caching/Data/AssetInfo.db?mode=ro *
+zenoss ALL=(ALL) NOPASSWD: SERVERADMIN_FULLSTATUS, SERVERADMIN_SETTINGS, LS_CACHEDATA, ASSETINFO_DB
 ```
- * `serveradmin` lines not required on macOS 10.13+
- * `LS_CACHEDATA` target path needs to match the "DataPath" attribute
+
+10.13 High Sierra and later
+```
+Cmnd_Alias LS_CACHEDATA = /bin/ls /Library/Application\ Support/Apple/AssetCache/Data/
+Cmnd_Alias ASSETINFO_DB = /usr/bin/sqlite3 -cmd .timeout\ * -line file\:/Library/Application\ Support/Apple/AssetCache/Data/AssetInfo.db?mode=ro *
+zenoss ALL=(ALL) NOPASSWD: LS_CACHEDATA, ASSETINFO_DB
+```
 
 ## SSH Issues
 

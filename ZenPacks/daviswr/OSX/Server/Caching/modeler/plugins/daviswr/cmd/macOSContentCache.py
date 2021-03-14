@@ -149,6 +149,10 @@ class macOSContentCache(CommandPlugin):
                             if attr in peers[idx]['details']:
                                 peers[idx][attr] = peers[idx]['details'][attr]
 
+        # Prevent existing components from being removed if service is down
+        if service.get('StartupStatus', '') != 'OK':
+            return None
+
         # Caching Service
         booleans = [
             'Active',
@@ -212,13 +216,6 @@ class macOSContentCache(CommandPlugin):
         service['id'] = self.prepId('CachingService')
         service['title'] = service.get('DataPath', 'Content Caching')
 
-        # Escape spaces in DataPath for zencommand later
-        if 'DataPath' in service:
-            service['DataPath'] = service['DataPath'].replace(' ', r'\ ')
-
-        # Not listening, service likely not running
-        if 'Port' in service and service.get('Port') == 0:
-            del service['Port']
         log.debug('Caching Service\n%s', service)
 
         rm = RelationshipMap(

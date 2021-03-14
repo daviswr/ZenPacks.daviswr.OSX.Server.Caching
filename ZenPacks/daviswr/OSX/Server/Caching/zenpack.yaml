@@ -272,7 +272,7 @@ device_classes:
             commandTemplate: |-
               $$ZENOTHING
               IFS=""
-              pkg_count=$$(/usr/bin/env sudo ls ${here/DataPath}/ | fgrep --count --invert-match --regexp AssetInfo --regexp tmp)
+              pkg_count=$$(/usr/bin/env sudo /bin/ls "${here/DataPath}"/ | fgrep --count --invert-match --regexp AssetInfo --regexp tmp)
               if [ -e "/usr/bin/AssetCacheManagerUtil" ]
               then
                   /usr/bin/AssetCacheManagerUtil --json status 2>/dev/null
@@ -313,7 +313,7 @@ device_classes:
               if [ -e "/usr/bin/AssetCacheManagerUtil" ]
               then
                   db_path="/Library/Application Support/Apple/AssetCache/Metrics/Metrics.db"
-                  sqlite3 -line "$$db_path" "\
+                  /usr/bin/sqlite3 -cmd ".timeout 5000" -line "file:$$db_path?mode=ro" "\
                     SELECT Sum(ZBYTESDROPPED) AS 'bytes.dropped',\
                            Sum(ZBYTESFROMCACHETOCLIENT) AS 'bytes.fromcache.toclients',\
                            Sum(ZBYTESFROMCACHETOPEER) AS 'bytes.fromcache.topeers',\
@@ -324,8 +324,8 @@ device_classes:
                            Sum(ZBYTESIMPORTEDBYXPC) AS 'bytes.imported.byxpc',\
                            Sum(ZBYTESPURGEDTOTAL) AS 'bytes.purged.total',\
                            Sum(ZBYTESPURGEDYOUNGERTHAN1DAY) AS 'bytes.purged.youngerthan1day',\
-                           Sum(ZBYTESPURGEDYOUNGERTHAN30DAYS) AS 'bytes.purged.youngerthan30days',\
                            Sum(ZBYTESPURGEDYOUNGERTHAN7DAYS) AS 'bytes.purged.youngerthan7days',\
+                           Sum(ZBYTESPURGEDYOUNGERTHAN30DAYS) AS 'bytes.purged.youngerthan30days',\
                            Sum(ZIMPORTSBYHTTP) AS 'imports.byhttp',\
                            Sum(ZIMPORTSBYXPC) AS 'imports.byxpc',\
                            Sum(ZREPLIESFROMCACHETOCLIENT) AS 'replies.fromcache.toclients',\
@@ -335,11 +335,11 @@ device_classes:
                            Sum(ZREPLIESFROMPEERTOCLIENT) AS 'replies.frompeers.toclients',\
                            Sum(ZREQUESTSFROMCLIENT) AS 'requests.fromclients',\
                            Sum(ZREQUESTSFROMPEER) AS 'requests.frompeers'\
-                    FROM ZMETRIC WHERE Date(978307200 + ZCREATIONDATE, 'unixepoch') = '$$date_today'"
+                    FROM ZMETRIC WHERE Date(978307200 + ZCREATIONDATE, 'unixepoch') = '$$date_today';"
               else
                   db_path="${here/ServerRoot}/Caching/Logs/Metrics.sqlite"
                   query_body="FROM statsData WHERE Date(collectionDate, 'unixepoch') = '$$date_today' AND metricName ="
-                  sqlite3 -line "$$db_path" "\
+                  /usr/bin/sqlite3 -cmd ".timeout 5000" -line "file:$$db_path?mode=ro" "\
                       SELECT Sum(dataValue) AS 'bytes.dropped' $$query_body 'bytes.dropped';\
                       SELECT Sum(dataValue) AS 'bytes.fromcache.toclients' $$query_body 'bytes.fromcache.toclients';\
                       SELECT Sum(dataValue) AS 'bytes.fromcache.topeers' $$query_body 'bytes.fromcache.topeers';\
@@ -350,8 +350,8 @@ device_classes:
                       SELECT Sum(dataValue) AS 'bytes.imported.byxpc' $$query_body 'bytes.imported.byxpc';\
                       SELECT Sum(dataValue) AS 'bytes.purged.total' $$query_body 'bytes.purged.total';\
                       SELECT Sum(dataValue) AS 'bytes.purged.youngerthan1day' $$query_body 'bytes.purged.youngerthan1day';\
-                      SELECT Sum(dataValue) AS 'bytes.purged.youngerthan30days' $$query_body 'bytes.purged.youngerthan30days';\
                       SELECT Sum(dataValue) AS 'bytes.purged.youngerthan7days' $$query_body 'bytes.purged.youngerthan7days';\
+                      SELECT Sum(dataValue) AS 'bytes.purged.youngerthan30days' $$query_body 'bytes.purged.youngerthan30days';\
                       SELECT Sum(dataValue) AS 'imports.byhttp' $$query_body 'imports.byhttp';\
                       SELECT Sum(dataValue) AS 'imports.byxpc' $$query_body 'imports.byxpc';\
                       SELECT Sum(dataValue) AS 'replies.fromcache.toclients' $$query_body 'replies.fromcache.toclients';\
@@ -360,7 +360,7 @@ device_classes:
                       SELECT Sum(dataValue) AS 'replies.fromorigin.topeers' $$query_body 'replies.fromorigin.topeers';\
                       SELECT Sum(dataValue) AS 'replies.frompeers.toclients' $$query_body 'replies.frompeers.toclients';\
                       SELECT Sum(dataValue) AS 'requests.fromclients' $$query_body 'requests.fromclients';\
-                      SELECT Sum(dataValue) AS 'requests.frompeers' $$query_body 'requests.frompeers'"
+                      SELECT Sum(dataValue) AS 'requests.frompeers' $$query_body 'requests.frompeers';"
               fi
 
             parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.sqlite
@@ -377,8 +377,8 @@ device_classes:
               bytes.imported.byxpc: DERIVE_MIN_0
               bytes.purged.total: DERIVE_MIN_0
               bytes.purged.youngerthan1day: DERIVE_MIN_0
-              bytes.purged.youngerthan30days: DERIVE_MIN_0
               bytes.purged.youngerthan7days: DERIVE_MIN_0
+              bytes.purged.youngerthan30days: DERIVE_MIN_0
               imports.byhttp: DERIVE_MIN_0
               imports.byxpc: DERIVE_MIN_0
               replies.fromcache.toclients: DERIVE_MIN_0
@@ -388,6 +388,36 @@ device_classes:
               replies.frompeers.toclients: DERIVE_MIN_0
               requests.fromclients: DERIVE_MIN_0
               requests.frompeers: DERIVE_MIN_0
+
+          assetinfo:
+            type: COMMAND
+            usessh: true
+            commandTemplate: |-
+              $$ZENOTHING
+              db_path="${here/DataPath}/AssetInfo.db"
+              date_query="978307200, 'unixepoch') = '$$(date -j -v-1d '+%Y-%m-%d')'"
+              /usr/bin/env sudo /usr/bin/sqlite3 -cmd ".timeout 5000" -line "file:$$db_path?mode=ro" "\
+                  SELECT Count(1) AS AppStore FROM ZASSET WHERE ZURI LIKE '/apple-mas%' OR ZURI LIKE '/itunes-assets/%';\
+                  SELECT Count(1) AS iOSUpd FROM ZASSET WHERE ZURI LIKE '%MobileAsset_%';\
+                  SELECT Count(1) AS macOSUpd FROM ZASSET WHERE ZURI LIKE '/content/downloads/%pkg';\
+                  SELECT Count(Distinct(ZID)) AS zAffinity FROM ZAFFINITY;\
+                  SELECT Count(1) AS zAsset FROM ZASSET;\
+                  SELECT Count(1) AS zCreationDate, Sum(ZTOTALBYTES) AS zCreationDateSize FROM ZASSET WHERE Date(ZCREATIONDATE + $$date_query;\
+                  SELECT Count(1) AS zLastAccessed, Sum(ZTOTALBYTES) AS zLastAccessedSize FROM ZASSET WHERE Date(ZLASTACCESSED + $$date_query;"
+
+            parser: ZenPacks.daviswr.OSX.Server.Caching.parsers.sqlite
+            cycletime: 60
+            component: "${here/id}"
+            datapoints:
+              AppStore: GAUGE
+              iOSUpd: GAUGE
+              macOSUpd: GAUGE
+              zAffinity: GAUGE
+              zAsset: GAUGE
+              zCreationDate: GAUGE
+              zCreationDateSize: GAUGE
+              zLastAccessed: GAUGE
+              zLastAccessedSize: GAUGE
 
         thresholds:
           Status:
@@ -418,24 +448,70 @@ device_classes:
             graphpoints:
               DEFAULTS:
                 lineType: AREA
-                stacked: true
               Used:
                 dpName: caching_CacheUsed
                 colorindex: 0
+                stacked: true
               Free:
                 dpName: caching_CacheFree
                 color: cccccc
+                stacked: true
+              Added Last Day:
+                dpName: assetinfo_zCreationDateSize
+                colorindex: 1
+                stacked: false
+              Accessed Last Day:
+                dpName: assetinfo_zLastAccessedSize
+                lineType: LINE
+                lineWidth: 2
+                stacked: false
+                colorindex: 2
 
           Cached Packages:
             units: packages
             graphpoints:
-              Cached:
-                dpName: caching_PackageCountCustom
+              DEFAULTS:
                 lineType: AREA
+                rpn: CEIL
                 format: "%5.0lf"
+              Total:
+                dpName: caching_PackageCountCustom
+                stacked: true
                 colorindex: 0
+              Added Last Day:
+                dpName: assetinfo_zCreationDate
+                colorindex: 1
+                stacked: false
+              Accessed Last Day:
+                dpName: assetinfo_zLastAccessed
+                lineType: LINE
+                lineWidth: 2
+                stacked: false
+                colorindex: 2
 
-          Cache Activity:
+          Cache Content:
+            units: packages
+            graphpoints:
+              DEFAULTS:
+                lineType: AREA
+                stacked: true
+                rpn: CEIL
+                format: "%5.0lf"
+              macOS Updates:
+                dpName: assetinfo_macOSUpd
+                colorindex: 0
+              iOS Updates:
+                dpName: assetinfo_iOSUpd
+                colorindex: 1
+              App Store:
+                dpName: assetinfo_AppStore
+                colorindex: 2
+              Other:
+                dpName: assetinfo_zAsset
+                rpn: "CEIL,macOS_Updates-rpn,-,iOS_Updates-rpn,-,App_Store-rpn,-"
+                colorindex: 8
+
+          Cache Total Traffic:
             units: bits/sec
             graphpoints:
               DEFAULTS:
@@ -452,7 +528,7 @@ device_classes:
                 dpName: caching_TotalBytesDropped
                 colorindex: 2
 
-          Cache Source Activity:
+          Cache Total Source Traffic:
             units: bits/sec
             graphpoints:
               DEFAULTS:
@@ -479,6 +555,128 @@ device_classes:
                 lineWidth: 2
                 format: "%5.2lf"
                 colorindex: 0
+
+          Cache Client Affinity:
+            units: clients
+            graphpoints:
+              Affinities:
+                dpName: assetinfo_zAffinity
+                lineType: AREA
+                stacked: true
+                rpn: CEIL
+                format: "%5.0lf"
+                colorindex: 0
+
+          Cache Requests:
+            units: requests/sec
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+                lineWidth: 2
+                format: "%5.2lf"
+              Clients:
+                dpName: metrics_requests.fromclients
+                colorindex: 0
+              Peers:
+                dpName: metrics_requests.frompeers
+                colorindex: 1
+
+          Cache Replies:
+            units: replies/sec
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+                lineWidth: 2
+                format: "%5.2lf"
+              Cache to Clients:
+                dpName: metrics_replies.fromcache.toclients
+                colorindex: 0
+              Cache to Peers:
+                dpName: metrics_replies.fromcache.topeers
+                colorindex: 1
+              Origin to Clients:
+                dpName: metrics_replies.fromorigin.toclients
+                colorindex: 2
+              Origin to Peers:
+                dpName: metrics_replies.fromorigin.topeers
+                colorindex: 3
+              Peers to Clients:
+                dpName: metrics_replies.frompeers.toclients
+                colorindex: 4
+
+          Cache Traffic:
+            units: bits/sec
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+                lineWidth: 2
+                rpn: "8,*"
+              Cache to Clients:
+                dpName: metrics_bytes.fromcache.toclients
+                colorindex: 0
+              Cache to Peers:
+                dpName: metrics_bytes.fromcache.topeers
+                colorindex: 1
+              Origin to Clients:
+                dpName: metrics_bytes.fromorigin.toclients
+                colorindex: 2
+              Origin to Peers:
+                dpName: metrics_bytes.fromorigin.topeers
+                colorindex: 3
+              Peers to Clients:
+                dpName: metrics_bytes.frompeers.toclients
+                colorindex: 4
+              Dropped:
+                dpName: metrics_bytes.dropped
+                colorindex: 5
+
+          Cache Import Activity:
+            units: imports/sec
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+                lineWidth: 2
+                format: "%5.2lf"
+              HTTP:
+                dpName: metrics_imports.byhttp
+                colorindex: 0
+              XPC:
+                dpName: metrics_imports.byxpc
+                colorindex: 1
+
+          Cache Import Traffic:
+            units: bits/sec
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+                lineWidth: 2
+                rpn: "8,*"
+              HTTP:
+                dpName: metrics_bytes.imported.byhttp
+                colorindex: 0
+              XPC:
+                dpName: metrics_bytes.imported.byxpc
+                colorindex: 1
+
+          Cache Content Purges:
+            units: bits/sec
+            graphpoints:
+              DEFAULTS:
+                lineType: LINE
+                lineWidth: 2
+              Younger Than 1 Day:
+                dpName: metrics_bytes.purged.youngerthan1day
+                colorindex: 0
+              Younger Than 7 Days:
+                dpName: metrics_bytes.purged.youngerthan7days
+                colorindex: 1
+              Younger Than 30 Days:
+                dpName: metrics_bytes.purged.youngerthan30days
+                colorindex: 2
+              Total:
+                dpName: metrics_bytes.purged.total
+                colorindex: 14
+
 
       ContentCache:
         targetPythonClass: ZenPacks.daviswr.OSX.Server.Caching.ContentCache
