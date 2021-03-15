@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2021-03-15
+### Added
+ * New datapoints and graphs from the Metrics and AssetInfo databases
+   * Detailed cache access graphs
+   * Cache hit ratio - calculation is reset when service is restarted
+   * Request & reply rates
+   * Import activity
+   * Content purges
+
+### Changed:
+ * Additional `sudo` access is required for AssetInfo database queries, see README
+ * Cache Size and Cached Packages graphs now include how much unique cache content was accessed in the last day
+
 ## [1.1.2] - 2020-12-23
 ### Added
  * Event generated when configured cache size limit minus cache used space exceeds volume free space
@@ -73,7 +86,8 @@ Final ZenPackLib 1.x release
 ## 0.8.1 - 2016-06-14
  * Alpha release
 
-[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.2...HEAD
+[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.2...1.2.0
 [1.1.2]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.0.0...1.1.0
