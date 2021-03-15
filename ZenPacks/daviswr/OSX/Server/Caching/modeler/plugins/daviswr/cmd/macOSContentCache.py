@@ -286,4 +286,5 @@ class macOSContentCache(CommandPlugin):
                 ))
         maps.append(rm)
 
+        log.debug('%s RelMaps:\n%s', self.name(), str(maps))
         return maps
