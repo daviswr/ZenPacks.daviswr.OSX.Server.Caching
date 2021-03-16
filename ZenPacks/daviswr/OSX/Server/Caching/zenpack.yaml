@@ -666,16 +666,23 @@ device_classes:
                 lineWidth: 2
               Younger Than 1 Day:
                 dpName: metrics_bytes.purged.youngerthan1day
+                legend: "<1 Day Old"
                 colorindex: 0
               Younger Than 7 Days:
                 dpName: metrics_bytes.purged.youngerthan7days
+                rpn: "Younger_Than_1_Day-raw,-"
+                legend: "1-7 Days Old"
                 colorindex: 1
               Younger Than 30 Days:
                 dpName: metrics_bytes.purged.youngerthan30days
+                rpn: "Younger_Than_7_Days-raw,-"
+                legend: "8-30 Days Old"
                 colorindex: 2
-              Total:
+              Older Than 30 Days:
                 dpName: metrics_bytes.purged.total
-                colorindex: 14
+                rpn: "Younger_Than_30_Days-raw,-"
+                legend: ">30 Days Old"
+                colorindex: 8
 
 
       ContentCache:
