@@ -3,7 +3,7 @@
 # or saved.  Do not modify them directly here.
 # NB: PACKAGES is deprecated
 NAME = "ZenPacks.daviswr.OSX.Server.Caching"
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 AUTHOR = "Wes Davis"
 LICENSE = "MIT"
 NAMESPACE_PACKAGES = ['ZenPacks', 'ZenPacks.daviswr', 'ZenPacks.daviswr.OSX', 'ZenPacks.daviswr.OSX.Server']

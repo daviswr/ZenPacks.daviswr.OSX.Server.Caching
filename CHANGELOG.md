@@ -1,6 +1,8 @@
 # Change Log
 
-## [Unreleased]
+## [1.2.1] - 2021-03-27
+### Changed:
+ * Content purge graph improvement
 
 ## [1.2.0] - 2021-03-15
 ### Added
@@ -86,7 +88,8 @@ Final ZenPackLib 1.x release
 ## 0.8.1 - 2016-06-14
  * Alpha release
 
-[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.2.0...HEAD
+[Unreleased]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.2.1...HEAD
+[1.2.1]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.2...1.2.0
 [1.1.2]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/daviswr/ZenPacks.daviswr.OSX.Server.Caching/compare/1.1.0...1.1.1
